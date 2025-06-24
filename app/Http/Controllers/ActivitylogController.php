@@ -62,4 +62,15 @@ class ActivitylogController extends Controller
     {
         //
     }
+    protected function logActivity(Request $request)
+{
+    $user = Auth::user();
+    $addedBy = $user ? $user->id : session('guest_id', uniqid('guest_', true));
+    session(['guest_id' => $addedBy]);
+
+    Activitylog::create([
+        'Added_by' => $addedBy,
+        'page_visited' => $request->path(),
+    ]);
+}
 }

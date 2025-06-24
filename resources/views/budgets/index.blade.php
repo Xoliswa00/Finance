@@ -21,6 +21,8 @@
 
             @if($CurrentB->isEmpty() )
             <p class="text-dark">No budgets found.</p>
+             <td >  <small  class="text-dark text-sm " > <a class="btn bg-gradient-danger btn-sm" href="{{route('budgets.Recurring')}}"><i class="material-icons text-sm">add</i>&nbsp;&nbsp;Recurring Items</a> &nbsp;&nbsp; </small></td>         
+                    <td >  <small  class="text-dark" > <a class="btn bg-gradient-dark btn-sm" href="{{route('budgets.create')}}"><i class="material-icons text-sm">add</i>&nbsp;&nbsp;Add Budget Item</a> &nbsp;&nbsp; </small></td>
             @else
 
             <div class="align-items-center">

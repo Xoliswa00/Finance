@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('check:overdue-bills')->daily();
+          $schedule->command('app:scan-laravel-log')->everyMinute(); // Or every 5 minutes
     }
     
 

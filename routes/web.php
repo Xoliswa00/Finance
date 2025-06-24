@@ -25,21 +25,27 @@ use App\Http\Controllers\NatureController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/error-test', function () {
+    throw new \Exception("Manual test exception for logging");
 });
+
+Route::get('/', function () {
+
+
+    return view('welcome');
+})->name('welcome');;
 
 Route::get('/features', function () {
     return view('features');
-});
+})->name('features');
 
 Route::get('/About', function () {
     return view('About');
-});
+})->name('About');
 
 Route::get('/Contact', function () {
     return view('Contact');
-});
+})->name('Contact');
 
 Route::get('/Nav', function () {
     return view('layouts.Nav');
