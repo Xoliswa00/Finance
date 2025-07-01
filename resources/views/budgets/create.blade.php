@@ -3,7 +3,7 @@
 @section('content')
 <div class="container my-auto">
     <div class="row justify-content-center">
-        <div class="col-lg-12 col-12 mx-auto">
+        <div class="col-lg-12 col-md-12 col-sm-12 mx-auto">
             <div class="card z-index-0 fadeIn3 shadow-dark fadeInBottom">
             <div
                     class="card-header p-0 position-relative mt-n4 mx-3 z-index-2"
@@ -16,7 +16,11 @@
                         >
                             Create Budget Item
                         </h4>
+                        
                     </div>
+                    <br>
+                                             <a title="Create New Category\ Action Item" class="btn btn-secondary  bg-gradient-dark mb-0" href="{{route('categories.create')}}"><i class="material-icons text-sm">add</i> Create New Category</a>
+
                 </div>
 
                 <div class="card-body">
@@ -140,6 +144,7 @@
                        
 
                         <button type="submit" class="btn btn-secondary">Create Budget Item</button>
+
                     </form>
                 </div>
             </div>

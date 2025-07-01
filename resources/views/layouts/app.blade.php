@@ -9,6 +9,14 @@
     <meta name="description" content="Bright Finance offers expert business consulting, financial solutions, and startup support in South Africa.">
 
 
+  <!-- Primary SVG favicon (modern browsers) -->
+<link rel="icon" type="image/svg+xml" href="Bright.svg">
+
+<!-- PNG fallback for older browsers -->
+<link rel="icon" type="image/png" href="/assets/images/bright.png">
+
+<!-- Windows/IE fallback (ICO) -->
+<link rel="shortcut icon" href="Bright.ico" type="image/x-icon">
 
 
     <!--     Fonts and icons     -->
@@ -57,33 +65,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script>
-        // Import the functions you need from the SDKs you need
-        import {
-            initializeApp
-        } from "firebase/app";
-        import {
-            getAnalytics
-        } from "firebase/analytics";
-        // TODO: Add SDKs for Firebase products that you want to use
-        // https://firebase.google.com/docs/web/setup#available-libraries
-
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-            apiKey: "AIzaSyArzK51VRL8TSsogYorIWfABATu31EpTz0",
-            authDomain: "bright-finance.firebaseapp.com",
-            projectId: "bright-finance",
-            storageBucket: "bright-finance.appspot.com",
-            messagingSenderId: "713846949395",
-            appId: "1:713846949395:web:2f92bffe30b5eeb8f661e6",
-            measurementId: "G-R2KVHCNSK0"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-    </script>
+  
 
 
 
@@ -97,10 +79,13 @@
                 <nav class="navbar navbar-expand-lg bg-gradient-info border-radius-lg shadow-dark mt-4 py-2">
                     <div class="container-fluid py-1 px-3 d-flex justify-content-between align-items-center">
 
-                        <!-- Logo -->
-                        <a href="/" class="navbar-brand d-flex align-items-center">
-                            <img src="assets/images/Bright v4.png" alt="Bright Finance" style="height: 4.3rem;">
-                        </a>
+                       <a href="/" class="navbar-brand d-flex align-items-center">
+    <picture>
+        <source srcset="assets/images/Bright.svg" type="image/svg+xml">
+        <img src="assets/images/Bright v4.png" alt="Bright Finance" style="height: 4.3rem;">
+    </picture>
+</a>
+
 
                         <!-- Toggler -->
                         <button class="navbar-toggler text-success ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navigation" aria-controls="navigation" aria-expanded="false" aria-label="Toggle navigation">
@@ -125,13 +110,13 @@
                                     <a class="nav-link btn bg-gradient-light me-2" href="/"><span class="mbri-home mbr-iconfont"></span></a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" tooltip="" href="/features"><span class="mbri-features mbr-iconfont"></span></a>
+                                    <a class="nav-link btn bg-gradient-light me-2" tooltip="" href="{{ route('features') }}"><span class="mbri-features mbr-iconfont"></span></a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" href="/About"><span class="mobi-mbri-info mbr-iconfont"></span></a>
+                                    <a class="nav-link btn bg-gradient-light me-2" href="{{ route('About') }}"><span class="mobi-mbri-info mbr-iconfont"></span></a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" href="/Contact"><span class="mobi-mbri-phone mbr-iconfont"></span></a>
+                                    <a class="nav-link btn bg-gradient-light me-2" href="{{ route('Contact') }}"><span class="mobi-mbri-phone mbr-iconfont"></span></a>
                                 </li>
                                 @if (Route::has('login'))
                                 <li class="nav-item">
@@ -145,34 +130,18 @@
                                 @endif
                                 @else
                                 <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" href="/home"><span class="mbri-desktop mbr-iconfont">Dashboard</span></a>
+                                    <a class="nav-link btn bg-gradient-light me-2" href="/home"><span class="">Dashboard</span></a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" href="/transactions"><span class="mbri-cash mbr-iconfont">Transactions</span></a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" href="/budgets"><span class="mbri-folder mbr-iconfont">Budgets</span></a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" href="{{ route('Goals.Matter') }}"><span class="mbri-target mbr-iconfont">Goals</span></a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" href="{{ route('Report.spending') }}"><span class="mbri-pages mbr-iconfont">Reports</span></a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link btn bg-gradient-light me-2" href="{{ route('profile.index') }}"><span class="mbri-image-gallery mbr-iconfont">Profile</span></a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        Log Out
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
-                                        </li>
-                                    </ul>
-                                </li>
+                             
+                                  <li class="nav-item d-flex align-items-center">
+            <a class=" show dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="material-icons opacity-10">logout</i>
+            </a>
+
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                @csrf
+            </form>
+            </li>
                                 @endguest
                             </ul>
                         </div>
@@ -238,7 +207,7 @@
                 <!-- Copyright -->
                 <div class="col-12 col-md-4 text-center text-md-end">
                     <p class="small mb-0 opacity-75">
-                        © {{ date('Y') }} Bright Finance. All rights reserved.6
+                        © {{ date('Y') }} Bright Finance. All rights reserved
                     </p>
                 </div>
             </div>
