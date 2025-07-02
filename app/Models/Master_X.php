@@ -12,5 +12,5 @@ class Master_X extends Model
     protected $fillable = [
         'Name', 'description', 'Start_date', 'end_date', 'Actual', 'Budget', 'progress', 'Added_by'
     ];
-    protected $table = 'master_x';
+    protected $table = 'Master_X';
 }

@@ -19,7 +19,7 @@ class ProfileController extends Controller
         $cards=cards::all()->where("Added_by","=",auth()->user()->id);
         $balance=category::select('Balance')->where("category","=","Bank (Dr)")->where("Added_by", "=", auth()->user()->id)->get();
         $CreditB=category::select('Balance')->where("category","=","Credit Card")->where("Added_by", "=", auth()->user()->id)->get();
-        return view('profile.index',compact('user','cards','balance','CreditB'));
+        return view('Profile.index',compact('user','cards','balance','CreditB'));
     }
 
     /**

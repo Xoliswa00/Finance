@@ -46,13 +46,13 @@ class TransactionController extends Controller
         $CreditB=category::select('Balance')->where("category","=","Credit Card")->where("Added_by", "=", auth()->user()->id)->get();
 
 
-        return view('transactions.index', compact('budgets','transactions','cards','main','balance' ,'CreditB'));
+        return view('Transactions.index', compact('budgets','transactions','cards','main','balance' ,'CreditB'));
     }
 
     public function Dashboard()
     {
         $transactions = Transaction::all()->where("Added_by","=",auth()->user()->id)->whereNotBetween( 'Status',['Deleted'] );
-        return view('transactions.Dashboard', compact('transactions'));
+        return view('Transactions.Dashboard', compact('transactions'));
     }
 
     public function create()
@@ -62,7 +62,7 @@ class TransactionController extends Controller
         ->get();
                 $cards=cards::all()->where("Added_by","=",auth()->user()->id);
         $action="No";
-        return view('transactions.create',compact('category','cards','action'));
+        return view('Transactions.create',compact('category','cards','action'));
     }
 
     public function store(Request $request)
@@ -103,7 +103,7 @@ class TransactionController extends Controller
     {
         $transaction = Transaction::findOrFail($id);
         $categories=category::all();
-        return view('transactions.edit', compact('transaction','categories'));
+        return view('Transactions.edit', compact('transaction','categories'));
     }
 
     public function update(Request $request, $id)
