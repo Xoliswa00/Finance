@@ -7,6 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
     <meta name="description" content="Guest Layout for Bright Finance">
     <title>BF: Bright Finance - Guest</title>
+      <!-- Primary SVG favicon (modern browsers) -->
+<link rel="icon" type="image/svg+xml" href="Bright.svg">
+
+<!-- PNG fallback for older browsers -->
+<link rel="icon" type="image/png" href="/assets/images/bright.png">
+
+<!-- Windows/IE fallback (ICO) -->
+<link rel="shortcut icon" href="Bright.ico" type="image/x-icon">
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
@@ -28,7 +36,12 @@
 
     <!-- Logo -->
     <a href="/" class="navbar-brand d-flex align-items-center">
-      <img src="assets/images/Bright v4.png" alt="Bright Finance" style="height: 4.3rem;">
+                <img src="/assets/images/Bright v4.png" alt="Bright Finance" style="height: 4.3rem;">
+
+      <picture>
+        <source srcset="/assets/images/Bright.svg" type="image/svg+xml">
+        <img src="/assets/images/Bright v4.png" alt="Bright Finance" style="height: 4.3rem;">
+    </picture>
     </a>
 
     <!-- Toggler -->

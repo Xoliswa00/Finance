@@ -48,7 +48,7 @@ class GoalsController extends Controller
         ->Paginate(10);
        
 
-        return view('goals.index', compact('goals'));
+        return view('Goals.index', compact('goals'));
       
     }
 
@@ -112,7 +112,7 @@ class GoalsController extends Controller
           $this->Milestone($NewGoal);
 
 
-        return redirect()->route('goals.index')
+        return redirect()->route('Goals.index')
             ->with('success', 'Goal created successfully.');
     }
 
@@ -158,7 +158,7 @@ class GoalsController extends Controller
         ]
     ]);
 
-    return view('goals.show', compact('goal', 'milestonesData', 'milestonesChartData'));
+    return view('Goals.show', compact('goal', 'milestonesData', 'milestonesChartData'));
 }
 
     
@@ -168,7 +168,7 @@ class GoalsController extends Controller
      */
     public function edit(Goals $goals)
     {
-        return view('goals.edit', compact('goal'));
+        return view('Goals.edit', compact('goal'));
     }
 
     /**
@@ -194,7 +194,7 @@ class GoalsController extends Controller
    
        /** */ $this->updateMilestones($goal->current_amount);
     
-        return redirect()->route('goals.show', $goal)
+        return redirect()->route('Goals.show', $goal)
             ->with('success', 'Goal updated successfully.');
     }
 
@@ -256,7 +256,7 @@ class GoalsController extends Controller
             $cards = Cards::where("Added_by", "=", auth()->user()->id)->get();
             $action = "Yes";
         
-            return view('transactions.create', compact('category', 'cards', 'action'));
+            return view('Transactions.create', compact('category', 'cards', 'action'));
         }
         
         

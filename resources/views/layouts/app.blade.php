@@ -38,7 +38,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <!-- CSS Files -->
     <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
-    <script defer data-site="YOUR_DOMAIN_HERE" src="https://api.nepcha.com/js/nepcha-analytics.js"></script>
 
 
     <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
@@ -80,10 +79,11 @@
                     <div class="container-fluid py-1 px-3 d-flex justify-content-between align-items-center">
 
                        <a href="/" class="navbar-brand d-flex align-items-center">
-    <picture>
-        <source srcset="assets/images/Bright.svg" type="image/svg+xml">
-        <img src="assets/images/Bright v4.png" alt="Bright Finance" style="height: 4.3rem;">
-    </picture>
+                                   <img src="/assets/images/Bright v4.png" alt="Bright Finance" style="height: 4.3rem;">
+                                           <source srcset="/assets/images/Bright.svg" type="image/svg+xml">
+
+
+
 </a>
 
 
