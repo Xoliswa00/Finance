@@ -21,8 +21,8 @@ class MasterXController extends Controller
     {
 
 
-        $Section=X_item::select('x_items.*')->join('Master_X','Master_X.id',"=","x_items.Master")->where('Added_by','=',auth()->user()->id)->get();
-        $balance=X_item::select( 'Master',DB::raw( "sum(x_items.Budget) as Budget" ), DB::raw('sum(x_items.Actual) as Actual' ))->join('Master_X','Master_X.id',"=",'x_items.Master')->groupby('master')->where('Added_by','=',auth()->user()->id)->get();
+        $Section=X_item::select('x_items.*')->join('Master_X','Master_X.id',"=","x_items.Master")->where('Added_by','=',auth()->user()->id)->where('status', '<>', 'Deleted')->get();
+        $balance=X_item::select( 'Master',DB::raw( "sum(x_items.Budget) as Budget" ), DB::raw('sum(x_items.Actual) as Actual' ))->join('Master_X','Master_X.id',"=",'x_items.Master')->groupby('master')->where('Added_by','=',auth()->user()->id)->where('status', '<>', 'Deleted')->get();
    
     
         $master= Master_X::where('Added_by','=',auth()->user()->id)->get();
@@ -81,10 +81,10 @@ class MasterXController extends Controller
     public function show($id)
 {
     $transactions = DB::table('transactions')
-        ->select('transactions.*', 'x_items.Section', 'x_items.id', 'x_items.Master')
+        ->select('transactions.*', 'x_items.section', 'x_items.id', 'x_items.Master')
         ->join('categories', 'transactions.Category', '=', 'categories.id')
         ->join('x_items', function ($join) {
-            $join->on('categories.category', 'like', DB::raw("CONCAT('Master : ', x_items.Section)"));
+            $join->on('categories.category', 'like', DB::raw("CONCAT('Master : ', x_items.section)"));
         })
         ->where('x_items.id', '=', $id)
         ->get();
@@ -92,7 +92,7 @@ class MasterXController extends Controller
         ->select('holdings.*')
         ->join('categories', 'holdings.Category', '=', 'categories.id')
         ->join('x_items', function ($join) {
-            $join->on('categories.category', 'like', DB::raw("CONCAT('Master : ', x_items.Section)"));
+            $join->on('categories.category', 'like', DB::raw("CONCAT('Master : ', x_items.section)"));
         })
         ->where('x_items.id', '=', $id)
         ->get();
@@ -102,10 +102,10 @@ class MasterXController extends Controller
         ->select(DB::raw("sum(holdings.Amount) as total"))
         ->join('categories', 'holdings.Category', '=', 'categories.id')
         ->join('x_items', function ($join) {
-            $join->on('categories.category', 'like', DB::raw("CONCAT('Master : ', x_items.Section)"));
+            $join->on('categories.category', 'like', DB::raw("CONCAT('Master : ', x_items.section)"));
         })
         ->where('x_items.id', '=', $id)
-        ->where('holdings.Status', '=', "holding")
+        ->where('holdings.Status', '=', "Holding")
         ->get();
 
 

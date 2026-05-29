@@ -133,11 +133,11 @@
                                                 <div class="container-fluid mt-4">
                                                     <div class="row">
                                                         @foreach($Section as $section)
-                                                            @if($section->Master == $goal->id)
+                                                            @if($section->master == $goal->id)
                                                                 <div class="col-md-6 col-sm-12 mb-4">
                                                                     <div class="card">
                                                                         <div class="card-header text-white bg-gradient-info ">
-                                                                            <h5 class="text-white" >{{$section->Section}}</h5>
+                                                                            <h5 class="text-white" >{{$section->section}}</h5>
                                                                             <div class="">
                                                                                
                                                                                 <a href="{{ route('master.show', $section->id) }}" class="btn btn-secondary">Show{{$section->id}}</a>
@@ -163,9 +163,9 @@
                                                                                 <div class="col-6 ">
                                                                                     <canvas id="pieChart{{$section->id}}" width="200" height="150"></canvas>
                                                                                     <span class="badge bg-info rounded-pill">
-                                                                                        {{ number_format(($section->Actual / $section->Budget) * 100, 2) }}%
+                                                                                        {{ number_format(($section->actual+1 / $section->budget+1) * 100, 2) }}%
                                                                                     </span>
-                                                                                    <p>Item Status : <strong>{{$section->Status}}</strong></p>
+                                                                                    <p>Item Status : <strong>{{$section->status}}</strong></p>
                                                                                    
 
                                                                                 </div>
@@ -173,21 +173,21 @@
                                                                             <ul class="list-group text text-sm te list-group-flush">
                                                                                 <li class="list-group-item">
                                                                                     <strong>Budget:</strong>@php
-                                                                                    $num =$section->Budget;
+                                                                                    $num =$section->budget;
                                                                                     $n = number_format($num, 2, '.', ',');
                                                                                     echo ' R ' . $n;
                                                                                   @endphp
                                                                                 </li>
                                                                                 <li class="list-group-item">
                                                                                     <strong>Actual:</strong> @php
-                                                                                    $num =$section->Actual;
+                                                                                    $num =$section->actual;
                                                                                     $n = number_format($num, 2, '.', ',');
                                                                                     echo ' R ' . $n;
                                                                                   @endphp
                                                                                 </li>
                                                                                 <li class="list-group-item">
                                                                                     <strong>Balance:</strong> @php
-                                                                                    $num =$section->Budget - $section->Actual;
+                                                                                    $num =$section->budget - $section->actual;
                                                                                     $n = number_format($num, 2, '.', ',');
                                                                                     echo ' R ' . $n;
                                                                                   @endphp
@@ -197,10 +197,10 @@
                                                                         </div>
                                                                         <script>
                                                                             var ctx{{$section->id}} = document.getElementById("pieChart{{$section->id}}").getContext('2d');
-                                                                            var budget = {{$section->Budget}};
-                                                                            var actual = {{$section->Actual}};
+                                                                            var budget = {{$section->budget}};
+                                                                            var actual = {{$section->actual}};
                                                                             var data = [budget, actual];
-                                                                            var labels = ["Budget", "Actual"];
+                                                                            var labels = ["budget", "actual"];
                                                                             var colors = ["#36a2eb", "#ff6384"];
                                                                             var pieChart{{$section->id}} = new Chart(ctx{{$section->id}}, {
                                                                                 type: 'pie',

@@ -37,8 +37,8 @@
                         <h4 class="mb-2 fw-bold">Call or WhatsApp</h4>
                         <p class="text-muted">Available Mon - Fri · 09:00 to 18:00</p>
                         <div class="d-flex flex-column gap-2">
-                            <a href="tel:0606861764" class="btn btn-outline-primary">Call: (060) 6861-764</a>
-                            <a href="https://wa.me/27606861764" target="_blank" class="btn btn-primary">
+                            <a href="tel:0674017419" class="btn btn-outline-primary">Call: (060) 6861-764</a>
+                            <a href="https://wa.me/27674017419" target="_blank" class="btn btn-primary">
                                 Chat on WhatsApp
                             </a>
                         </div>

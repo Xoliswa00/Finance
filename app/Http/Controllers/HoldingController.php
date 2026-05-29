@@ -7,6 +7,8 @@ use App\Models\Holding;
 use App\models\category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Facades\Redirect;
 
 class HoldingController extends Controller
@@ -25,12 +27,14 @@ class HoldingController extends Controller
     public function create()
     {
         //
-        $category = Category::where("Added_by", "=", auth()->user()->id)
+        $category =DB::table('categories')
+        ->where('Added_by', "=",auth()->user()->id)
         ->where('category', 'LIKE', '%Master :%')
         ->get();
+
                 $cards=cards::all()->where("Added_by","=",auth()->user()->id);
         $action="No";
-        return view('Master.Holding',compact('category','cards','action'));
+        return view('Master.holding',compact('category','cards','action'));
     }
 
     /**

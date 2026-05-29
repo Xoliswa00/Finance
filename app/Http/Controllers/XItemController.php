@@ -29,9 +29,10 @@ class XItemController extends Controller
     public function create()
     {
         //
-        $Section=X_item::select('x_items.*')->join('Master_X','Master_X.id',"=","x_items.Master")->where('Added_by','=',auth()->user()->id)->get();
-        $balance=X_item::select( 'Master',DB::raw( "sum(x_items.Budget) as Budget" ), DB::raw('sum(x_items.Actual) as Actual' ))->join('Master_X','Master_X.id',"=",'x_items.Master')->groupby('master')->where('Added_by','=',auth()->user()->id)->get();
+        $Section=X_item::select('x_items.*')->join('Master_X','Master_X.id',"=","x_items.Master")->where('Added_by','=',auth()->user()->id)->where('status', '<>', 'Deleted')->get();
+        $balance=X_item::select( 'Master',DB::raw( "sum(x_items.Budget) as Budget" ), DB::raw('sum(x_items.Actual) as Actual' ))->join('Master_X','Master_X.id',"=",'x_items.Master')->groupby('master')->where('Added_by','=',auth()->user()->id)->where('status', '<>', 'Deleted')->get();
    
+
     
         $master= Master_X::where('Added_by','=',auth()->user()->id)->get();
         $masters= Master_X::where('Added_by','=',auth()->user()->id)->get();
@@ -58,7 +59,7 @@ class XItemController extends Controller
             'end_date' => 'required|date|after:start_date',
             'Status' => 'required|in:Not Started,Delayed,In-progress,Completed',
             'Progress' => 'required|integer',
-            'master_id' => 'required|exists:master_x,id'
+            'master_id' => 'required|exists:Master_X,id'
         ]);
 
         // Create a new XItem

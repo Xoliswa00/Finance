@@ -138,7 +138,7 @@ class TransactionController extends Controller
             $title = trim(substr($balance->category, strpos($balance->category, ':') + 1));
     
             // Find the goal based on the extracted title
-            $result = DB::table('Goals')
+            $result = DB::table('goals')
                 ->select('id')
                 ->where('title', 'LIKE', '%' . $title . '%')
                 ->get();
@@ -150,7 +150,7 @@ class TransactionController extends Controller
             }
         } else {
             // Handle the case when the category does not contain "Goal"
-            $result = DB::table('Goals')
+            $result = DB::table('goals')
                 ->select('*')
                 ->where('title', '=', $balance->category)
                 ->get();
@@ -267,7 +267,7 @@ class TransactionController extends Controller
 
 
         }else{
-            $Kido=DB::table('Transactions')->where("Added_by","=",auth()->user()->id)->latest()->first();
+            $Kido=DB::table('transactions')->where("Added_by","=",auth()->user()->id)->latest()->first();
           
             if($nature->Nature=="Current Assets" || $nature->Nature=="Non-Current Assets" || $nature->Nature=="Expenses" || $nature->Nature=="Drawings" ){
                 $effect=-1;

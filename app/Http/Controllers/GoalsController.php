@@ -31,7 +31,7 @@ class GoalsController extends Controller
      if ($goals->isEmpty()) {
             return view('Goals.Goals');
         } else {
-            return view('goals.index', compact('goals'));
+            return view('Goals.index', compact('goals'));
         }
 
        
@@ -57,7 +57,7 @@ class GoalsController extends Controller
      */
     public function create()
     {
-        return view('goals.create');
+        return view('Goals.create');
         }
 
     /**
@@ -108,11 +108,11 @@ class GoalsController extends Controller
 
 
 
-        $NewGoal=DB::table('Goals')->where("Added_by","=",auth()->user()->id)->latest()->first();
+        $NewGoal=Goals::where("Added_by","=",auth()->user()->id)->latest()->first();
           $this->Milestone($NewGoal);
 
 
-        return redirect()->route('Goals.index')
+        return redirect()->route('goals.index')
             ->with('success', 'Goal created successfully.');
     }
 

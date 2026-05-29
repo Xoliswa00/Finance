@@ -236,7 +236,7 @@ class BudgetController extends Controller
 
       
     }
-    public function Recurrings()
+  public function Recurrings()
     {
         $currentMonth = Carbon::now();
         $MonthsAgo = $currentMonth->copy()->subMonths(1);
@@ -306,5 +306,4 @@ public function calculateNextDueDate($recurringOption, $currentDueDate)
 
     return $nextDueDate;
 }
-
 }

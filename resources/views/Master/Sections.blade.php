@@ -29,7 +29,7 @@
                             <div class="col-6 ">
                                 <canvas id="pieChart{{$section->id}}" width="200" height="150"></canvas>
                                 <span class="badge bg-info rounded-pill">
-                                    {{ number_format(($section->Actual / $section->Budget) * 100, 2) }}%
+                                    {{ number_format(($section->actual / $section->budget) * 100, 2) }}%
                                 </span>
                                 <p>Item Status : <strong>{{$section->Status}}</strong></p>
                             
@@ -39,21 +39,21 @@
                         <ul class="list-group text text-sm te list-group-flush">
                             <li class="list-group-item">
                                 <strong>Total Budget:</strong>@php
-                                $num =$section->Budget;
+                                $num =$section->budget;
                                 $n = number_format($num, 2, '.', ',');
                                 echo ' R ' . $n;
                             @endphp
                             </li>
                             <li class="list-group-item">
                                 <strong>Total Spending / Actual:</strong> @php
-                                $num =$section->Actual;
+                                $num =$section->actual;
                                 $n = number_format($num, 2, '.', ',');
                                 echo ' R ' . $n;
                             @endphp
                             </li>
                             <li class="list-group-item">
                                 <strong>Remaining Balance:</strong> @php
-                                $num =$section->Budget - $section->Actual;
+                                $num =$section->budget - $section->actual;
                                 $n = number_format($num, 2, '.', ',');
                                 echo ' R ' . $n;
                             @endphp
@@ -67,7 +67,7 @@
 
                             <li class="list-group-item">
                                 <strong>Balance after Transaction on hold:</strong> @php
-                                $num =($section->Budget - $section->Actual)-$sum[0]->total;
+                                $num =($section->budget - $section->actual)-$sum[0]->total;
                                 $n = number_format($num, 2, '.', ',');
                                 echo ' R ' . $n;
                             @endphp
@@ -77,8 +77,8 @@
                     </div>
                     <script>
                         var ctx{{$section->id}} = document.getElementById("pieChart{{$section->id}}").getContext('2d');
-                        var budget = {{$section->Budget}};
-                        var actual = {{$section->Actual}};
+                        var budget = {{$section->budget}};
+                        var actual = {{$section->actual}};
                         var data = [budget, actual];
                         var labels = ["Budget", "Actual"];
                         var colors = ["#36a2eb", "#ff6384"];
@@ -226,7 +226,7 @@
                             <div class="d-flex align-items-center">
                               <button  class="btn btn-icon-only btn-rounded btn-outline-danger mb-0 me-3 p-3 btn-lg d-flex align-items-center justify-content-center"  ><i class="material-icons text-lg">expand_more</i></button>
                               <div class="d-flex flex-column">
-                                <h6 class="mb-1 text-dark text-sm">{{$tran->Section}} : {{$tran->Description}}</h6>
+                                <h6 class="mb-1 text-dark text-sm">{{$tran->section}} : {{$tran->Description}}</h6>
                                 <span class="text-xs text-dark">{{$tran->bill_date}}    </span>
                       
                               
