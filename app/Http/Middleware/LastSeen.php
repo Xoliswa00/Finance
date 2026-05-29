@@ -12,6 +12,16 @@ class LastSeen
 {
     public function handle(Request $request, Closure $next)
     {
-    dd('🧠 Middleware triggered: ' . $request->path());
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $cacheKey = 'last_seen_' . $userId;
+
+            if (!cache()->has($cacheKey)) {
+                \App\Models\User::where('id', $userId)->update(['last_seen' => now()]);
+                cache()->put($cacheKey, true, now()->addMinutes(2));
+            }
+        }
+
+        return $next($request);
     }
 }

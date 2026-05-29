@@ -32,8 +32,14 @@ class User extends Authenticatable
         'Mobile',
         'Location',
         'Role',
-        'last_seen'
+        'last_seen',
+        'onboarded',
     ];
+
+    public function isNewUser(): bool
+    {
+        return !$this->onboarded;
+    }
     public function hasRole($role)
     {
         return $this->Role === $role;

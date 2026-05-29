@@ -96,74 +96,79 @@ $thereMonthsAgo = $currentMonth->copy()->subMonths(3);
 
 
 
-    /***
-     * Cash budget function
-    */
-    public function CashBudget(){
+    public function CashBudget()
+    {
+        $userId        = auth()->user()->id;
         $currentMonthT = Carbon::now();
-        $currentMonth = $currentMonthT->format('Y-m');
-        $nextMonthT = $currentMonthT->copy()->addMonth();
-        $nextMonth = $nextMonthT->format('Y-m');
-        $lastMonthT = $currentMonthT->copy()->subMonth();
-     $lastMonth = $lastMonthT->format('Y-m');
+        $currentMonth  = $currentMonthT->format('Y-m');
+        $lastMonthT    = $currentMonthT->copy()->subMonth();
+        $lastMonth     = $lastMonthT->format('Y-m');
 
-        // Retrieve budget data for the last two months grouped by description
+        // Opening balance = Bank (Dr) category actual balance
+        $bankRow = DB::table('categories')
+            ->where('Added_by', $userId)
+            ->where('category', 'Bank (Dr)')
+            ->first();
+        $openingBalance = $bankRow ? (float) $bankRow->Balance : 0;
+
         $budgetData = DB::table('budgets')
-        ->select('Description', DB::raw("MAX(categories.Nature) as Nature"),
-        DB::raw("SUM(CASE WHEN DATE_FORMAT(due_date, '%Y-%m') = '$lastMonth' AND DATE_FORMAT(due_date, '%Y-%m') < '$currentMonth' THEN Amount ELSE 0 END) AS month_2_budget"),
-        DB::raw("SUM(CASE WHEN DATE_FORMAT(due_date, '%Y-%m') = '$lastMonth' AND DATE_FORMAT(due_date, '%Y-%m') < '$currentMonth' THEN budgets.Limit ELSE 0 END) AS month_2_Actual"),
-        DB::raw("SUM(CASE WHEN DATE_FORMAT(due_date, '%Y-%m') = '$currentMonth'  THEN Amount ELSE 0 END) AS month_1_budget"),
-        DB::raw("SUM(CASE WHEN DATE_FORMAT(due_date, '%Y-%m') = '$currentMonth' THEN budgets.Limit ELSE 0 END) AS month_1_Actual"),
-      
-    )
-                ->whereIn('budgets.Status',['Planning','Finalized'])
-                ->where("budgets.Added_by", "=", auth()->user()->id)
-            ->groupBy('Description')
-            ->join('categories','categories.id','budgets.Category')
+            ->select(
+                'budgets.Description',
+                DB::raw('MAX(categories.Nature) as Nature'),
+                DB::raw("SUM(CASE WHEN DATE_FORMAT(due_date,'%Y-%m') = '$lastMonth'    THEN budgets.Amount            ELSE 0 END) AS m2_budget"),
+                DB::raw("SUM(CASE WHEN DATE_FORMAT(due_date,'%Y-%m') = '$lastMonth'    THEN COALESCE(budgets.Limit,0) ELSE 0 END) AS m2_actual"),
+                DB::raw("SUM(CASE WHEN DATE_FORMAT(due_date,'%Y-%m') = '$currentMonth' THEN budgets.Amount            ELSE 0 END) AS m1_budget"),
+                DB::raw("SUM(CASE WHEN DATE_FORMAT(due_date,'%Y-%m') = '$currentMonth' THEN COALESCE(budgets.Limit,0) ELSE 0 END) AS m1_actual")
+            )
+            ->join('categories', 'categories.id', '=', 'budgets.Category')
+            ->whereIn('budgets.Status', ['Planning', 'Finalized'])
+            ->where('budgets.Added_by', $userId)
+            ->groupBy('budgets.Description')
+            ->orderByRaw("FIELD(MAX(categories.Nature),'Income') DESC")
+            ->orderBy('budgets.Description')
             ->get();
-        
 
+        $m2IncomeBudget = $m2IncomeActual = $m2ExpenseBudget = $m2ExpenseActual = 0;
+        $m1IncomeBudget = $m1IncomeActual = $m1ExpenseBudget = $m1ExpenseActual = 0;
 
-        $openingBalance = 0; // Initialize the opening balance
-
-        foreach ($budgetData as $budgetItem) {
-            // Accumulate the budgeted cash inflows for Month 2
-            $openingBalance += $budgetItem->month_2_budget;
-        }
-        $totalCashInflowsMonth1=0;
-        $totalCashOutflowsMonth1=0;
-        foreach($budgetData as $balances){
-            if($balances->Nature =="Income"  ){
-                $totalCashInflowsMonth1 +=$balances->month_1_budget;
-
-            }else{
-                $totalCashOutflowsMonth1 +=$balances->month_1_budget;
+        foreach ($budgetData as $row) {
+            if ($row->Nature === 'Income') {
+                $m2IncomeBudget  += $row->m2_budget;  $m2IncomeActual  += $row->m2_actual;
+                $m1IncomeBudget  += $row->m1_budget;  $m1IncomeActual  += $row->m1_actual;
+            } else {
+                $m2ExpenseBudget += $row->m2_budget;  $m2ExpenseActual += $row->m2_actual;
+                $m1ExpenseBudget += $row->m1_budget;  $m1ExpenseActual += $row->m1_actual;
             }
-
-            
         }
-           
-             
 
+        // Net = Inflows - Outflows  |  Closing = Opening + Net
+        $m1NetBudget    = $m1IncomeBudget  - $m1ExpenseBudget;
+        $m1NetActual    = $m1IncomeActual  - $m1ExpenseActual;
+        $m2NetBudget    = $m2IncomeBudget  - $m2ExpenseBudget;
+        $m2NetActual    = $m2IncomeActual  - $m2ExpenseActual;
+        $closingBalance = $openingBalance + $m1NetBudget;
 
-                    // Calculate the net cash flow for the current month
-            $currentMonthNetCashFlow = $totalCashInflowsMonth1 - $totalCashOutflowsMonth1; 
-
-            // Calculate the closing balance for the current month
-            $closingBalance = $openingBalance - $currentMonthNetCashFlow;
-
-        // Pass the data to the view
         $data = [
-            'opening_balance' => $openingBalance,
-            'closing_balance'=>$closingBalance,
-            'budget_data' => $budgetData,
-            'month_2'=>date_format($lastMonthT,"M-Y"),
-            'month_1'=>date_format($currentMonthT,"M-Y")
+            'opening_balance'   => $openingBalance,
+            'closing_balance'   => $closingBalance,
+            'budget_data'       => $budgetData,
+            'month_2'           => $lastMonthT->format('M Y'),
+            'month_1'           => $currentMonthT->format('M Y'),
+            'm2_income_budget'  => $m2IncomeBudget,
+            'm2_income_actual'  => $m2IncomeActual,
+            'm2_expense_budget' => $m2ExpenseBudget,
+            'm2_expense_actual' => $m2ExpenseActual,
+            'm1_income_budget'  => $m1IncomeBudget,
+            'm1_income_actual'  => $m1IncomeActual,
+            'm1_expense_budget' => $m1ExpenseBudget,
+            'm1_expense_actual' => $m1ExpenseActual,
+            'm2_net_budget'     => $m2NetBudget,
+            'm2_net_actual'     => $m2NetActual,
+            'm1_net_budget'     => $m1NetBudget,
+            'm1_net_actual'     => $m1NetActual,
         ];
 
-        
-         
-        return view('Financials.CashBudget',compact('data'));
+        return view('Financials.CashBudget', compact('data'));
     }
 
 
@@ -288,6 +293,72 @@ for ($i = 0; $i < 3; $i++) {
      }
 
     /**
+     * Monthly income vs expense trend — last 12 months
+     */
+    public function monthlyTrends()
+    {
+        $userId = auth()->user()->id;
+
+        $rows = DB::table('transactions')
+            ->select(
+                DB::raw("DATE_FORMAT(bill_date, '%Y-%m') as month"),
+                DB::raw("SUM(CASE WHEN Action IN ('Received','Earned') THEN amount ELSE 0 END) as income"),
+                DB::raw("SUM(CASE WHEN Action IN ('Paid','Bought') THEN amount ELSE 0 END) as expenses")
+            )
+            ->where('Added_by', $userId)
+            ->where('bill_date', '>=', Carbon::now()->subMonths(11)->startOfMonth())
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        $categoryBreakdown = DB::table('transactions')
+            ->join('categories', 'transactions.Category', '=', 'categories.id')
+            ->select(
+                'categories.category as name',
+                'categories.Nature as nature',
+                DB::raw('SUM(transactions.Amount) as total')
+            )
+            ->where('transactions.Added_by', $userId)
+            ->where('transactions.bill_date', '>=', Carbon::now()->subMonths(2)->startOfMonth())
+            ->where('transactions.Action', 'IN', ['Paid', 'Bought'])
+            ->groupBy('categories.id', 'categories.category', 'categories.Nature')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        // fix IN — use whereIn instead
+        $categoryBreakdown = DB::table('transactions')
+            ->join('categories', 'transactions.Category', '=', 'categories.id')
+            ->select(
+                'categories.category as name',
+                'categories.Nature as nature',
+                DB::raw('SUM(transactions.Amount) as total')
+            )
+            ->where('transactions.Added_by', $userId)
+            ->where('transactions.bill_date', '>=', Carbon::now()->subMonths(2)->startOfMonth())
+            ->whereIn('transactions.Action', ['Paid', 'Bought'])
+            ->groupBy('categories.id', 'categories.category', 'categories.Nature')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        $netByMonth = $rows->map(fn($r) => [
+            'month'    => $r->month,
+            'income'   => (float) $r->income,
+            'expenses' => (float) $r->expenses,
+            'net'      => (float) $r->income - (float) $r->expenses,
+        ]);
+
+        $totals = [
+            'income'   => $netByMonth->sum('income'),
+            'expenses' => $netByMonth->sum('expenses'),
+            'net'      => $netByMonth->sum('net'),
+        ];
+
+        return view('Financials.monthly-trends', compact('netByMonth', 'totals', 'categoryBreakdown'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
@@ -308,28 +379,72 @@ for ($i = 0; $i < 3; $i++) {
      */
     public function show(Request $request)
     {
-        // Fetch the specific category using the ID
+        $userId = auth()->user()->id;
+
         $account = DB::table('categories')
-                        ->select('category','updated_at')
-                        ->where('id', $request->id)
-                        ->where('Added_by', auth()->user()->id)
-                        ->first();
-    
-        // Check if the category exists
+            ->select('id', 'category', 'Nature', 'Balance', 'updated_at')
+            ->where('id', $request->id)
+            ->where('Added_by', $userId)
+            ->first();
+
         if (!$account) {
-            return redirect()->route('your_error_route')->with('error', 'Category not found.');
+            return redirect()->route('Balancesheet')->with('error', 'Account not found.');
         }
-    
-        // Retrieve transactions related to the selected category
+
+        // journal_entries.Account stores EITHER the numeric category id (as string)
+        // OR the category name directly (e.g. "Bank (Dr)").  Match both.
         $result = DB::table('journal_entries')
-                        ->select('Effect', 'transactions.Action', 'categories.category as Account', 'transactions.bill_date', 'transactions.Amount', 'transactions.Description')
-                        ->join('transactions', 'journal_entries.transaction_id', '=', 'transactions.id')
-                        ->join('categories', 'transactions.Category', '=', 'categories.id')
-                        ->where('journal_entries.Account', $request->id)
-                        ->where('categories.Added_by', auth()->user()->id)
-                        ->get();
-    
-        return view('Financials.T-Balance', compact('account', 'result'));
+            ->select(
+                'journal_entries.Effect',
+                'journal_entries.Amount',
+                'journal_entries.created_at as entry_date',
+                'transactions.Action',
+                'transactions.bill_date',
+                'transactions.Description',
+                'contra_cat.category as ContraAccount'
+            )
+            ->join('transactions', 'journal_entries.transaction_id', '=', 'transactions.id')
+            // Fetch the contra account name (the OTHER entry in the same transaction for this account)
+            ->leftJoin('journal_entries as je2', function ($j) {
+                $j->on('je2.transaction_id', '=', 'journal_entries.transaction_id')
+                  ->whereColumn('je2.id', '<>', 'journal_entries.id');
+            })
+            ->leftJoin('categories as contra_cat', function ($j) {
+                $j->on('contra_cat.id', '=', 'je2.Account')
+                  ->orOn('contra_cat.category', '=', 'je2.Account');
+            })
+            ->where('transactions.Added_by', $userId)
+            ->where(function ($q) use ($account) {
+                // Match by numeric ID stored as string, OR by category name
+                $q->where('journal_entries.Account', (string) $account->id)
+                  ->orWhere('journal_entries.Account', $account->category);
+            })
+            ->orderBy('transactions.bill_date')
+            ->get();
+
+        // Compute T-account totals
+        $totalDr = $result->where('Effect', 'Dr')->sum('Amount');
+        $totalCr = $result->where('Effect', 'Cr')->sum('Amount');
+
+        // Balance c/d and b/d
+        if ($totalDr >= $totalCr) {
+            $balanceSide = 'Dr';
+            $balanceAmt  = $totalDr - $totalCr;
+            $cd = ['side' => 'Cr', 'amount' => $balanceAmt];   // c/d on Cr side to balance
+            $bd = ['side' => 'Dr', 'amount' => $balanceAmt];   // b/d on Dr side (debit balance)
+        } else {
+            $balanceSide = 'Cr';
+            $balanceAmt  = $totalCr - $totalDr;
+            $cd = ['side' => 'Dr', 'amount' => $balanceAmt];   // c/d on Dr side
+            $bd = ['side' => 'Cr', 'amount' => $balanceAmt];   // b/d on Cr side (credit balance)
+        }
+
+        $runningTotal = max($totalDr, $totalCr);
+
+        return view('Financials.T-Balance', compact(
+            'account', 'result', 'totalDr', 'totalCr',
+            'balanceSide', 'balanceAmt', 'cd', 'bd', 'runningTotal'
+        ));
     }
     
 
