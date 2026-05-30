@@ -153,8 +153,8 @@
         <div class="row g-4">
             @php
                 $values = [
-                    ['fa-eye','#eff6ff','#1d4ed8','Transparency','Your data is yours. We show you exactly what's happening with your money — no smoke, no mirrors.'],
-                    ['fa-bolt','#fefce8','#d97706','Simplicity','Financial tools don't have to be complicated. We strip away the noise so you can focus on what matters.'],
+                    ['fa-eye','#eff6ff','#1d4ed8','Transparency','Your data is yours. We show you exactly what\'s happening with your money — no smoke, no mirrors.'],
+                    ['fa-bolt','#fefce8','#d97706','Simplicity','Financial tools don\'t have to be complicated. We strip away the noise so you can focus on what matters.'],
                     ['fa-lock','#f0fdf4','#059669','Security','Your financial information is sensitive. We treat it with the same care you would.'],
                     ['fa-seedling','#fdf4ff','#7c3aed','Growth','Every feature is built to help you move forward — toward savings goals, financial stability, and peace of mind.'],
                 ];

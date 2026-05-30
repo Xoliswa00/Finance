@@ -127,7 +127,7 @@
                         Mon – Fri, 09:00 – 18:00
                     </div>
                     <br>
-                    <a href="tel:0606861764" class="btn btn-success w-100" style="border-radius:10px;font-weight:600;">
+                    <a href="tel:0674017419" class="btn btn-success w-100" style="border-radius:10px;font-weight:600;">
                         <i class="fas fa-phone me-2"></i>060 686 1764
                     </a>
                 </div>
@@ -146,7 +146,7 @@
                         Usually replies quickly
                     </div>
                     <br>
-                    <a href="https://wa.me/27606861764" target="_blank" class="btn w-100 fw-bold text-white" style="background:#25D366;border-radius:10px;">
+                    <a href="https://wa.me/27674017419" target="_blank" class="btn w-100 fw-bold text-white" style="background:#25D366;border-radius:10px;">
                         <i class="fab fa-whatsapp me-2"></i>Chat on WhatsApp
                     </a>
                 </div>

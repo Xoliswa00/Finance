@@ -13,4 +13,9 @@ class Master_X extends Model
         'Name', 'description', 'Start_date', 'end_date', 'Actual', 'Budget', 'progress', 'Added_by'
     ];
     protected $table = 'Master_X';
+
+    public function x_items()
+    {
+        return $this->hasMany(X_item::class, 'Master');
+    }
 }

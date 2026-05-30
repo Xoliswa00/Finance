@@ -12,12 +12,12 @@ class NatureController extends Controller
     {
         $natures = Nature::all();
 
-        return view('natures.index', compact('natures'));
+        return view('Natures.index', compact('natures'));
     }
 
     public function create()
     {
-        return view('natures.creates');
+        return view('Natures.creates');
     }
 
     public function store(Request $request)
@@ -33,12 +33,12 @@ class NatureController extends Controller
         $nature->Added_by=Auth::id();
         $nature->save();
 
-        return redirect()->route('natures.index')->with('success', 'Nature created successfully.');
+        return redirect()->route('Natures.index')->with('success', 'Nature created successfully.');
     }
 
     public function edit(Nature $nature)
     {
-        return view('natures.Modify', compact('nature'));
+        return view('Natures.Modify', compact('nature'));
     }
 
     public function update(Request $request, Nature $nature)
@@ -52,13 +52,13 @@ class NatureController extends Controller
         $nature->Nature = $request->Nature;
         $nature->save();
 
-        return redirect()->route('natures.index')->with('success', 'Nature updated successfully.');
+        return redirect()->route('Natures.index')->with('success', 'Nature updated successfully.');
     }
 
     public function destroy(Nature $nature)
     {
         $nature->delete();
 
-        return redirect()->route('natures.index')->with('success', 'Nature deleted successfully.');
+        return redirect()->route('Natures.index')->with('success', 'Nature deleted successfully.');
     }
 }

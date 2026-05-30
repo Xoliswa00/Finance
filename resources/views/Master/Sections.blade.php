@@ -29,7 +29,7 @@
                             <div class="col-6 ">
                                 <canvas id="pieChart{{$section->id}}" width="200" height="150"></canvas>
                                 <span class="badge bg-info rounded-pill">
-                                    {{ number_format(($section->actual / $section->budget) * 100, 2) }}%
+                                    {{ $section->budget > 0 ? number_format(($section->actual / $section->budget) * 100, 2) : 0 }}%
                                 </span>
                                 <p>Item Status : <strong>{{$section->Status}}</strong></p>
                             

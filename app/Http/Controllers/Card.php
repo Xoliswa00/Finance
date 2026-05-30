@@ -8,7 +8,7 @@ class Card extends Controller
 {
     public function index()
     {
-        $cards = cards::all();
+        $cards = cards::where('Added_by', auth()->id())->get();
         return view('cards.index', compact('cards'));
     }
 

@@ -18,7 +18,7 @@
                         <div class="card-body position-relative z-index-1 p-3">
                         <i class="material-icons text-white p-2">wifi</i>
                         <h2 class="text-white mt-4 mb-5 pb-2"> <?php
-                            $cardNumbers = $main->CardNumber;
+                            $cardNumbers = $main->CardNumber ?? '1234567896321';
                             $n = substr($cardNumbers, 0, 4) . "   ****   ****   " . substr($cardNumbers, 12, 16);
                             echo $n;
                             ?></h2>

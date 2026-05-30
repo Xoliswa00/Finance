@@ -67,7 +67,7 @@ class MasterXController extends Controller
         Master_X::create([
             'Name'        => $request->Name,
             'description' => $request->description,
-            'start_date'  => $request->Start_date,
+            'Start_date'  => $request->Start_date,
             'end_date'    => $request->end_date,
             'budget'      => $request->Budget,
             'progress'    => $request->progress,
