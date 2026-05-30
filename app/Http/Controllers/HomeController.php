@@ -6,7 +6,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Mail\BudgetReminderMail;
 use App\Models\Budget;
 use App\Models\cards;
-use App\Models\Category;
+use App\Models\category;
 use App\Models\Goals;
 use App\Models\Milestone;
 use App\Models\Transaction;
@@ -25,7 +25,7 @@ class HomeController extends Controller
     {
         $userId = auth()->user()->id;
 
-        $balance = Category::select('Balance')
+        $balance = category::select('Balance')
             ->where('category', 'Bank (Dr)')
             ->where('Added_by', $userId)
             ->get();

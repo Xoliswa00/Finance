@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
+use App\Models\category;
 use App\Models\Nature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +17,7 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $categories = Category::where('Added_by', Auth::id())
+        $categories = category::where('Added_by', Auth::id())
             ->orderBy('Nature')
             ->orderBy('category')
             ->get();
