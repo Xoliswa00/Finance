@@ -106,7 +106,7 @@
 {{-- ── Per-Goal Accordion ── --}}
 @foreach($masters as $goal)
 @php
-    $goalSections = $Section->where('Master', $goal->id);
+    $goalSections = $Section->where('master', $goal->id);
     $goalBudget   = $goalSections->sum('budget');
     $goalActual   = $goalSections->sum('actual');
     $goalVariance = $goalBudget - $goalActual;
