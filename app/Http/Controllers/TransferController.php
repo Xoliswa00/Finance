@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\DB;
 
 class TransferController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     public function index()
     {
         $transfers = Transfer::with(['fromCategory', 'toCategory'])

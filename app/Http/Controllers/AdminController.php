@@ -149,8 +149,10 @@ class AdminController extends Controller
             'suspended'           => User::whereNotNull('suspended_at')->count(),
             'total_transactions'  => DB::table('journal_entries')->count(),
             'total_budgets'       => DB::table('budgets')->count(),
-            'used_transfers'      => DB::table('transfers')->distinct('user_id')->count('user_id'),
-            'used_imports'        => 0, // placeholder until statement tracking is added
+            'used_transfers'      => \Illuminate\Support\Facades\Schema::hasTable('transfers')
+                                        ? DB::table('transfers')->distinct('added_by')->count('added_by')
+                                        : 0,
+            'used_imports'        => 0,
             'page_views_today'    => Activitylog::whereDate('created_at', today())->count(),
             'page_views_week'     => Activitylog::where('created_at', '>=', now()->startOfWeek())->count(),
         ];
