@@ -33,7 +33,7 @@ class ErrorTicketObserver
                 User Agent: {$ticket->user_agent}
                 User ID: {$ticket->user_id}
             ", function ($message) {
-                $message->to('support@yourdomain.com')->subject('🚨 New Error Ticket');
+                $message->to('support@brightfinance-x.co.za')->subject('🚨 New Error Ticket');
             });
         } catch (\Throwable $e) {
             Log::error("❌ Failed to email error: " . $e->getMessage());

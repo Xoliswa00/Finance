@@ -2,16 +2,14 @@
 
 namespace App\Exceptions;
 
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Throwable;
 use App\Models\ErrorTicket;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\HttpException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\ErrorTicketMail;
-use Illuminate\Http\Request;
-
-
+use Illuminate\Support\Facades\Schema;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -21,54 +19,50 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
-
-
-    use Throwable;
-
-    public function report(Throwable $exception)
+    public function report(Throwable $exception): void
     {
-      try {
-        // Optional: Ignore some exceptions (e.g., 404s)
+        // Don't pollute the error log with 404s or other "expected" exceptions
         if ($this->shouldntReport($exception)) {
             parent::report($exception);
             return;
         }
 
-        // Custom DB logging
-        ErrorTicket::create([
-            'user_id' => Auth::check() ? Auth::id() : null,
-            'level' => 'error',
-            'message' => $exception->getMessage(),
-            'trace' => substr($exception->getTraceAsString(), 0, 5000), // Optional truncate
-            'url' => Request::fullUrl(),
-            'method' => Request::method(),
-            'ip' => Request::ip(),
+        // Write to Laravel log first — guaranteed, even if DB is down
+        Log::error($exception->getMessage(), [
+            'url'        => request()->fullUrl(),
+            'user_id'    => Auth::check() ? Auth::id() : null,
+            'exception'  => $exception,
         ]);
-    } catch (\Throwable $e) {
-        // Log to default Laravel log if DB logging fails
-        Log::error('🛑 Failed to log to logs_main: ' . $e->getMessage());
-    }
-        parent::report($exception); // let Laravel do its default reporting too (e.g., Sentry, Bugsnag)
+
+        // Persist to error_tickets table if it exists
+        try {
+            if (Schema::hasTable('error_tickets')) {
+                ErrorTicket::create([
+                    'user_id'    => Auth::check() ? Auth::id() : null,
+                    'error_type' => get_class($exception),
+                    'message'    => $exception->getMessage(),
+                    'file'       => $exception->getFile(),
+                    'line'       => $exception->getLine(),
+                    'url'        => request()->fullUrl(),
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                ]);
+            }
+        } catch (Throwable $e) {
+            Log::error('Failed to persist error ticket: ' . $e->getMessage());
+        }
+
+        parent::report($exception);
     }
 
     public function render($request, Throwable $exception)
-{
-    if ($request->expectsJson()) {
-        return response()->json([
-            'error' => 'Something went wrong. Please try again later.',
-        ], 500);
+    {
+        if ($request->expectsJson()) {
+            $status = $exception instanceof HttpException ? $exception->getStatusCode() : 500;
+            return response()->json(['error' => 'Something went wrong. Please try again later.'], $status);
+        }
+
+        // Let Laravel resolve the correct error view (404.blade.php, 500.blade.php, etc.)
+        return parent::render($request, $exception);
     }
-
-    return parent::render($request, $exception); // default error page
 }
-
-
-
-
-
-
-
-
-}
-
-

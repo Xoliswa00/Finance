@@ -13,12 +13,19 @@ class LastSeen
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check()) {
-            $userId = Auth::id();
-            $cacheKey = 'last_seen_' . $userId;
+            static $hasColumn = null;
+            if ($hasColumn === null) {
+                $hasColumn = \Illuminate\Support\Facades\Schema::hasColumn('users', 'last_seen');
+            }
 
-            if (!cache()->has($cacheKey)) {
-                \App\Models\User::where('id', $userId)->update(['last_seen' => now()]);
-                cache()->put($cacheKey, true, now()->addMinutes(2));
+            if ($hasColumn) {
+                $userId   = Auth::id();
+                $cacheKey = 'last_seen_' . $userId;
+
+                if (!cache()->has($cacheKey)) {
+                    \App\Models\User::where('id', $userId)->update(['last_seen' => now()]);
+                    cache()->put($cacheKey, true, now()->addMinutes(2));
+                }
             }
         }
 

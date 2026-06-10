@@ -217,9 +217,6 @@
             <a href="{{ route('admin.announcements.index') }}" class="btn bg-gradient-warning btn-sm">
               <i class="material-icons text-sm me-1">campaign</i> Post Announcement
             </a>
-            <a href="{{ route('admin.tickets.index') }}" class="btn bg-gradient-success btn-sm">
-              <i class="material-icons text-sm me-1">confirmation_number</i> View Tickets
-            </a>
           </div>
         </div>
       </div>

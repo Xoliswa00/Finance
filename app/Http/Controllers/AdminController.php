@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Activitylog;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -13,7 +14,9 @@ class AdminController extends Controller
     {
         $threshold = now()->subMinutes(5);
 
-        $onlineCount = DB::table('users')->where('last_seen', '>=', $threshold)->count();
+        $onlineCount = Schema::hasColumn('users', 'last_seen')
+            ? DB::table('users')->where('last_seen', '>=', $threshold)->count()
+            : 0;
 
         // Daily activity (last 30 days)
         $activityCounts = Activitylog::selectRaw('DATE(created_at) as date, COUNT(*) as count')
@@ -72,12 +75,10 @@ class AdminController extends Controller
         // Feature usage stats
         $featureStats = $this->featureStats();
 
-        // Recent login attempts (last 20 failed)
-        $recentFailedLogins = DB::table('login_attempts')
-            ->where('succeeded', false)
-            ->orderByDesc('created_at')
-            ->limit(10)
-            ->get();
+        // Recent login attempts (last 10 failed)
+        $recentFailedLogins = Schema::hasTable('login_attempts')
+            ? DB::table('login_attempts')->where('succeeded', false)->orderByDesc('created_at')->limit(10)->get()
+            : collect();
 
         return view('Admin.Dashboard', compact(
             'userCount', 'percentageChange', 'newUsersThisWeek', 'weekChange',
@@ -145,8 +146,8 @@ class AdminController extends Controller
         return [
             'total_users'         => User::count(),
             'active_30d'          => User::where('last_seen', '>=', now()->subDays(30))->count(),
-            'onboarded'           => User::where('onboarded', true)->count(),
-            'suspended'           => User::whereNotNull('suspended_at')->count(),
+            'onboarded'           => Schema::hasColumn('users', 'onboarded') ? User::where('onboarded', true)->count() : 0,
+            'suspended'           => Schema::hasColumn('users', 'suspended_at') ? User::whereNotNull('suspended_at')->count() : 0,
             'total_transactions'  => DB::table('journal_entries')->count(),
             'total_budgets'       => DB::table('budgets')->count(),
             'used_transfers'      => \Illuminate\Support\Facades\Schema::hasTable('transfers')
