@@ -4,11 +4,11 @@ namespace App\Exceptions;
 
 use App\Models\ErrorTicket;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Exceptions\HttpException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -21,35 +21,49 @@ class Handler extends ExceptionHandler
 
     public function report(Throwable $exception): void
     {
-        // Don't pollute the error log with 404s or other "expected" exceptions
-        if ($this->shouldntReport($exception)) {
-            parent::report($exception);
-            return;
+        // Resolve HTTP status code; non-HTTP exceptions count as 500
+        $status = $exception instanceof HttpExceptionInterface
+            ? $exception->getStatusCode()
+            : 500;
+
+        // ── Log everything to the Laravel log file ──────────────────────
+        // Skip validation (user input errors) — they're not bugs
+        if (!($exception instanceof ValidationException)) {
+            $logContext = [
+                'url'    => request()->fullUrl(),
+                'method' => request()->method(),
+                'ip'     => request()->ip(),
+                'user'   => Auth::check() ? Auth::id() . ' (' . Auth::user()->email . ')' : 'guest',
+            ];
+
+            if ($status >= 500) {
+                Log::error("[{$status}] " . $exception->getMessage(), $logContext + ['exception' => $exception]);
+            } elseif ($status >= 400) {
+                Log::warning("[{$status}] " . $exception->getMessage(), $logContext);
+            } else {
+                Log::info("[{$status}] " . $exception->getMessage(), $logContext);
+            }
         }
 
-        // Write to Laravel log first — guaranteed, even if DB is down
-        Log::error($exception->getMessage(), [
-            'url'        => request()->fullUrl(),
-            'user_id'    => Auth::check() ? Auth::id() : null,
-            'exception'  => $exception,
-        ]);
-
-        // Persist to error_tickets table if it exists
-        try {
-            if (Schema::hasTable('error_tickets')) {
-                ErrorTicket::create([
-                    'user_id'    => Auth::check() ? Auth::id() : null,
-                    'error_type' => get_class($exception),
-                    'message'    => $exception->getMessage(),
-                    'file'       => $exception->getFile(),
-                    'line'       => $exception->getLine(),
-                    'url'        => request()->fullUrl(),
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                ]);
+        // ── Persist server errors (500+) to error_tickets table ─────────
+        // 4xx are expected user/client errors — no point polluting the DB
+        if ($status >= 500) {
+            try {
+                if (Schema::hasTable('error_tickets')) {
+                    ErrorTicket::create([
+                        'user_id'    => Auth::check() ? Auth::id() : null,
+                        'error_type' => get_class($exception),
+                        'message'    => $exception->getMessage(),
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine(),
+                        'url'        => request()->fullUrl(),
+                        'ip_address' => request()->ip(),
+                        'user_agent' => request()->userAgent(),
+                    ]);
+                }
+            } catch (Throwable $e) {
+                Log::error('Failed to persist error ticket: ' . $e->getMessage());
             }
-        } catch (Throwable $e) {
-            Log::error('Failed to persist error ticket: ' . $e->getMessage());
         }
 
         parent::report($exception);
@@ -58,11 +72,10 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $exception)
     {
         if ($request->expectsJson()) {
-            $status = $exception instanceof HttpException ? $exception->getStatusCode() : 500;
+            $status = $exception instanceof HttpExceptionInterface ? $exception->getStatusCode() : 500;
             return response()->json(['error' => 'Something went wrong. Please try again later.'], $status);
         }
 
-        // Let Laravel resolve the correct error view (404.blade.php, 500.blade.php, etc.)
         return parent::render($request, $exception);
     }
 }
