@@ -42,8 +42,8 @@ class TransactionController extends Controller
         $cards = cards::where("Added_by", "=", auth()->user()->id)->get();
         $main = cards::where("Added_by",'=', auth()->user()->id)->where("Type","=", "Debit Card")->first();
         $transactions = Transaction::where("Added_by", "=", auth()->user()->id)->where('Status', '!=','Deleted')->where('updated_at','>',$lastMonth)->latest()->orderBy('created_at')->paginate(15);
-        $balance=category::select('Balance')->where("category","=","Bank (Dr)")->where("Added_by", "=", auth()->user()->id)->get();
-        $CreditB=category::select('Balance')->where("category","=","Credit Card")->where("Added_by", "=", auth()->user()->id)->get();
+        $balance = category::select('Balance')->where('category', 'Bank (Dr)')->where('Added_by', auth()->id())->first();
+        $CreditB = category::select('Balance')->where('category', 'Credit Card')->where('Added_by', auth()->id())->first();
 
 
         return view('Transactions.index', compact('budgets','transactions','cards','main','balance' ,'CreditB'));
