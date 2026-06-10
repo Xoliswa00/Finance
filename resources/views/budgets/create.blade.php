@@ -1,152 +1,109 @@
 @extends('layouts.Nav')
 
+@section('title', 'New Budget')
+@section('page-title', 'Create Budget Item')
+
+@section('breadcrumb')
+<span>/</span>
+<a href="{{ route('budgets.index') }}">Budgets</a>
+<span>/</span>
+<span>New</span>
+@endsection
+
 @section('content')
-<div class="container my-auto">
-    <div class="row justify-content-center">
-        <div class="col-lg-12 col-md-12 col-sm-12 mx-auto">
-            <div class="card z-index-0 fadeIn3 shadow-dark fadeInBottom">
-            <div
-                    class="card-header p-0 position-relative mt-n4 mx-3 z-index-2"
-                >
-                    <div
-                        class="bg-gradient-info shadow-primary border-radius-lg py-3 pe-1"
-                    >
-                        <h4
-                            class="text-white font-weight-bolder text-center mt-2 mb-0"
-                        >
-                            Create Budget Item
-                        </h4>
-                        
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+        <div class="card" style="border-radius:16px;border:1px solid #e2e8f0;">
+            <div class="card-body p-4">
+                <h5 style="font-weight:700;color:#0f172a;margin-bottom:4px;">Add Budget Item</h5>
+                <p style="font-size:.84rem;color:#94a3b8;margin-bottom:24px;">Create a budget entry for income or expense tracking.</p>
+
+                <form action="{{ route('budgets.store') }}" method="POST">
+                    @csrf
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Category</label>
+                        <select name="category" class="form-select @error('category') is-invalid @enderror" required>
+                            <option value="">— Select category —</option>
+                            @foreach($category as $cat)
+                            <option value="{{ $cat->id }}" {{ old('category') == $cat->id ? 'selected' : '' }}>
+                                {{ $cat->Nature }} — {{ $cat->category }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('category')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <small style="display:block;margin-top:6px;color:#94a3b8;">
+                            <a href="{{ route('categories.create') }}" style="color:#1d4ed8;text-decoration:none;">+ Create new category</a>
+                        </small>
                     </div>
-                    <br>
-                                             <a title="Create New Category\ Action Item" class="btn btn-secondary  bg-gradient-dark mb-0" href="{{route('categories.create')}}"><i class="material-icons text-sm">add</i> Create New Category</a>
 
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Description</label>
+                        <input type="text" name="description" class="form-control @error('description') is-invalid @enderror"
+                               value="{{ old('description') }}" placeholder="e.g. Monthly rent" required>
+                        @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
 
-                <div class="card-body">
-                    <form action="{{ route('budgets.store') }}" class="form" method="POST">
-                        @csrf
-
-                        <div class="input-group input-group-outline ">
-                            <label for="category" class="col-4 col-form-label text-md-right">{{(' What are you budgeting For ') }}</label>
-
-                            <div class="col-6">
-                                <select name="category" class="form-control" required>
-                                    <option value="">-- Select Action Item --</option>
-                                    @foreach($category as $category)
-                                    <option value="{{ $category->id }}">{{ $category->category }} - {{$category->Nature}}</option>
-                                    @endforeach
-                                </select>
-
-                                @error('category')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                                @enderror
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Budget Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="font-size:.85rem;color:#64748b;">R</span>
+                                <input type="number" step="0.01" min="0" name="amount"
+                                       class="form-control @error('amount') is-invalid @enderror"
+                                       value="{{ old('amount') }}" placeholder="0.00">
+                                @error('amount')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         </div>
-                       
-                          <div class="input-group input-group-outline my-3">
-                                <label for="Action" class="col-4 col-form-label text-md-right">{{ __('Description') }}</label>
-
-                                <div class="col-6">
-                                
-                                <input type="text" name="description" id="description" class="form-control input" value="{{ old('description') }}" required>
-
-    
-
-
-                                    @error('description')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
-                                </div>
-                          </div>
-                          <div class="input-group input-group-outline my-3">
-                                <label  for="amount" class="col-4 col-form-label text-md-right">{{ __('Budget Amount') }}</label>
-
-                                <div class="col-6">
-                                
-                                <input type="number" name="amount" id="amount" class="form-control" value="{{ old('amount') }}">
-
-    
-
-
-                                    @error('amount')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
-                                </div>
-                          </div>
-                          <div class="input-group input-group-outline my-3">
-                                <label  for="amount" class="col-4 col-form-label text-md-right">{{ __('Actual Amount') }}</label>
-
-                                <div class="col-6">
-                                
-                                <input type="number" name="limit" id="limit" class="form-control" value="{{ old('limit') }}" required>
-
-    
-
-
-                                    @error('limit')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
-                                </div>
-                          </div>
-
-
-
-                          <div class="form-group  input-group input-group-outline my-3">
-                          <label for="due_date" class="col-4 col-form-label text-md-right">Due Date</label>
-                            <div class="col-6">
-                             
-                                <input type="date" name="due_date" id="due_date" class="form-control" value="{{ old('due_date') }}" required>
-                            </div>
-
-                            
-                        </div>
-
-
-
-                       
-
-                        <div class="form-group input-group input-group-outline my-3">
-                        <label for="recurring" class="col-4 col-form-label text-md-right">Recurring</label>
-
-                            <div class="col-6">
-                                <select name="recurring" id="recurring" class="form-control" required>
-                                    <option value="Once-off" {{ old('recurring') === 'Once-off' ? 'selected' : '' }}>Once-off</option>
-                                    <option value="Weekly" {{ old('recurring') === 'Weekly' ? 'selected' : '' }}>Weekly</option>
-                                    <option value="Monthly" {{ old('recurring') === 'Monthly' ? 'selected' : '' }}>Monthly</option>
-                                    <option value="Yearly" {{ old('recurring') === 'Yearly' ? 'selected' : '' }}>Yearly</option>
-                                </select>
+                        <div class="col-6 mb-3">
+                            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Actual Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="font-size:.85rem;color:#64748b;">R</span>
+                                <input type="number" step="0.01" min="0" name="limit"
+                                       class="form-control @error('limit') is-invalid @enderror"
+                                       value="{{ old('limit') }}" placeholder="0.00" required>
+                                @error('limit')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group  input-group input-group-outline my-3">
-                        <label for="priority" class="col-4 col-form-label text-md-right">Priority</label>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Due Date</label>
+                        <input type="date" name="due_date"
+                               class="form-control @error('due_date') is-invalid @enderror"
+                               value="{{ old('due_date') }}" required>
+                        @error('due_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
 
-                            <div class="col-md-6">
-                              
-                                <select name="priority" id="priority" class="form-control">
-                                    <option value="High" {{ old('priority') === 'High' ? 'selected' : '' }}>High</option>
-                                    <option value="Moderate" {{ old('priority') === 'Moderate' ? 'selected' : '' }}>Moderate</option>
-                                    <option value="Normal" {{ old('priority') === 'Normal' ? 'selected' : '' }}>Normal</option>
-                                </select>
-                            </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Recurring</label>
+                            <select name="recurring" class="form-select @error('recurring') is-invalid @enderror" required>
+                                <option value="Once-off" {{ old('recurring') === 'Once-off' ? 'selected' : '' }}>Once-off</option>
+                                <option value="Weekly"   {{ old('recurring') === 'Weekly'   ? 'selected' : '' }}>Weekly</option>
+                                <option value="Monthly"  {{ old('recurring') === 'Monthly'  ? 'selected' : '' }}>Monthly</option>
+                                <option value="Yearly"   {{ old('recurring') === 'Yearly'   ? 'selected' : '' }}>Yearly</option>
+                            </select>
+                            @error('recurring')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Priority</label>
+                            <select name="priority" class="form-select @error('priority') is-invalid @enderror">
+                                <option value="Normal"   {{ old('priority') === 'Normal'   ? 'selected' : '' }}>Normal</option>
+                                <option value="Moderate" {{ old('priority') === 'Moderate' ? 'selected' : '' }}>Moderate</option>
+                                <option value="High"     {{ old('priority') === 'High'     ? 'selected' : '' }}>High</option>
+                            </select>
+                            @error('priority')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
 
-                       
-                       
-
-                        <button type="submit" class="btn btn-secondary">Create Budget Item</button>
-
-                    </form>
-                </div>
+                    <div class="d-flex align-items-center gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary" style="border-radius:10px;font-weight:600;padding:9px 24px;">
+                            Create Budget Item
+                        </button>
+                        <a href="{{ route('budgets.index') }}" class="btn btn-outline-secondary" style="border-radius:10px;font-weight:600;">Cancel</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

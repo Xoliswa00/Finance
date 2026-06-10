@@ -38,7 +38,8 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\LogPageVisit::class,
             \App\Http\Middleware\LastSeen::class,
-      
+            \App\Http\Middleware\CheckSuspended::class,
+            \App\Http\Middleware\ShareAnnouncement::class,
         ],
 
         'api' => [
@@ -66,8 +67,8 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-         'logpage' => \App\Http\Middleware\LogPageVisit::class,
-    'lastseen' => \App\Http\Middleware\LastSeen::class,
-        
+        'logpage'   => \App\Http\Middleware\LogPageVisit::class,
+        'lastseen'  => \App\Http\Middleware\LastSeen::class,
+        'admin'     => \App\Http\Middleware\CheckAdminRole::class,
     ];
 }

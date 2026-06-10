@@ -15,11 +15,30 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        $user=User::all()->where("Added_by","=",auth()->user()->id);
-        $cards=cards::all()->where("Added_by","=",auth()->user()->id);
-        $balance=category::select('Balance')->where("category","=","Bank (Dr)")->where("Added_by", "=", auth()->user()->id)->get();
-        $CreditB=category::select('Balance')->where("category","=","Credit Card")->where("Added_by", "=", auth()->user()->id)->get();
-        return view('Profile.index',compact('user','cards','balance','CreditB'));
+        $user    = auth()->user();
+        $cards   = cards::where('Added_by', auth()->id())->get();
+        $balance = category::select('Balance')->where('category', 'Bank (Dr)')->where('Added_by', auth()->id())->first();
+        $CreditB = category::select('Balance')->where('category', 'Credit Card')->where('Added_by', auth()->id())->first();
+        return view('Profile.index', compact('user', 'cards', 'balance', 'CreditB'));
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'Surname'  => 'required|string|max:255',
+            'Mobile'   => 'required|string|max:30',
+            'Location' => 'required|string|max:255',
+        ]);
+
+        auth()->user()->update([
+            'name'     => $request->name,
+            'Surname'  => $request->Surname,
+            'Mobile'   => $request->Mobile,
+            'Location' => $request->Location,
+        ]);
+
+        return back()->with('success', 'Profile updated successfully.');
     }
 
     /**

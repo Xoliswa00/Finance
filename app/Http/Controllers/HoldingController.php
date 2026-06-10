@@ -32,7 +32,7 @@ class HoldingController extends Controller
         ->where('category', 'LIKE', '%Master :%')
         ->get();
 
-                $cards=cards::all()->where("Added_by","=",auth()->user()->id);
+                $cards = cards::where('Added_by', auth()->id())->get();
         $action="No";
         return view('Master.holding',compact('category','cards','action'));
     }

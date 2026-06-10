@@ -25,15 +25,16 @@ return new class extends Migration
         });
 
 
+        // Added_by = null means system-owned; column is nullable so no FK dependency on user 1 existing
         DB::table('natures')->insert([
-            ['Classification' => 'Liability', 'Nature' => 'Non-Current Liabilities','Added_by' =>'1'],
-            ['Classification' => 'Liability', 'Nature' =>'Current Liabilities','Added_by' =>'1'],
-            ['Classification' => 'Assets', 'Nature' => 'Non-Current Assets','Added_by' =>'1'],
-            ['Classification' => 'Assets', 'Nature' =>'Current Assets','Added_by' =>'1'],
-            ['Classification' => 'Owners Equity', 'Nature' => 'Income','Added_by' =>'1'],
-            ['Classification' => 'Owners Equity', 'Nature' =>'Expenses','Added_by' =>'1'],
-            ['Classification' => 'Owners Equity', 'Nature' =>'Drawings','Added_by' =>'1'],
-            ['Classification' => 'Owners Equity', 'Nature' =>'Capital','Added_by' =>'1'],
+            ['Classification' => 'Liability',      'Nature' => 'Non-Current Liabilities', 'Added_by' => null],
+            ['Classification' => 'Liability',      'Nature' => 'Current Liabilities',     'Added_by' => null],
+            ['Classification' => 'Assets',         'Nature' => 'Non-Current Assets',      'Added_by' => null],
+            ['Classification' => 'Assets',         'Nature' => 'Current Assets',          'Added_by' => null],
+            ['Classification' => 'Owners Equity',  'Nature' => 'Income',                  'Added_by' => null],
+            ['Classification' => 'Owners Equity',  'Nature' => 'Expenses',                'Added_by' => null],
+            ['Classification' => 'Owners Equity',  'Nature' => 'Drawings',                'Added_by' => null],
+            ['Classification' => 'Owners Equity',  'Nature' => 'Capital',                 'Added_by' => null],
         ]);
 
       

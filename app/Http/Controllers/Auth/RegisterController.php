@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\category;
+use App\Notifications\AppNotification;
 use App\Providers\RouteServiceProvider;
 use App\Models\User;
 use Auth;
@@ -104,9 +105,9 @@ class RegisterController extends Controller
             ['category'=>'Business: Cash drawings ','Nature'=>'Drawings','Added_by'=>$user],
             ['category'=>'Business: Stock drawings ','Nature'=>'Drawings','Added_by'=>$user],
             ['category'=>'Business: Cash Capital ','Nature'=>'Capital','Added_by'=>$user],
-            ['category'=>'Equipment','Nature' =>'Current Assets','Added_by'=>$user],
-            ['category'=>'Vehicle','Nature' =>'Current Assets','Added_by'=>$user],
-            ['category'=>'Land and Buildings','Nature' =>'Current Assets','Added_by'=>$user],
+            ['category'=>'Equipment','Nature' =>'Non-Current Assets','Added_by'=>$user],
+            ['category'=>'Vehicle','Nature' =>'Non-Current Assets','Added_by'=>$user],
+            ['category'=>'Land and Buildings','Nature' =>'Non-Current Assets','Added_by'=>$user],
             ['category'=>'Debtor Control','Nature' =>'Current Assets','Added_by'=>$user],
             ['category'=>'Prepared Expenses','Nature' =>'Current Assets','Added_by'=>$user],
 
@@ -151,8 +152,19 @@ $number=1234567890123000+$user;
         ]);
 
         Mail::to($user->email)->send(new WelcomeMail);
-    
+
         $this->Category($user->id, $user->name);
+
+        try {
+            $user->notify(new AppNotification(
+                'Welcome to Bright Finance!',
+                'Your account is set up. Complete your profile and add your first transaction to get started.',
+                'celebration',
+                route('onboarding')
+            ));
+        } catch (\Throwable $e) {
+            // Never block registration over a notification failure
+        }
 
       
     

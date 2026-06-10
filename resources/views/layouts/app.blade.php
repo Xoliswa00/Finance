@@ -290,6 +290,24 @@
 </div>
 @endif
 
+{{-- Impersonation banner --}}
+@if(session('impersonating_id'))
+<div style="background:#7c3aed;color:#fff;text-align:center;padding:8px 16px;font-size:.85rem;font-weight:600;position:sticky;top:0;z-index:9999;">
+  <i class="fas fa-user-secret me-1"></i> You are impersonating <strong>{{ auth()->user()->name }}</strong>.
+  <form action="{{ route('admin.stop-impersonating') }}" method="POST" style="display:inline">
+    @csrf
+    <button type="submit" style="background:none;border:none;color:#e9d5ff;text-decoration:underline;cursor:pointer;font-size:.85rem;font-weight:600;">Stop Impersonating</button>
+  </form>
+</div>
+@endif
+
+{{-- Active announcement --}}
+@if(!empty($activeAnnouncement))
+<div class="alert alert-{{ $activeAnnouncement->type }} mb-0 text-center border-radius-0 py-2" style="border-radius:0;">
+  <i class="fas fa-bullhorn me-2"></i>{{ $activeAnnouncement->message }}
+</div>
+@endif
+
 <main>@yield('content')</main>
 
 {{-- ═══ FOOTER ═══ --}}

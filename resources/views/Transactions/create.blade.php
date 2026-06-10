@@ -1,190 +1,111 @@
 @extends('layouts.Nav')
 
+@section('title', 'New Transaction')
+@section('page-title', 'Record Transaction')
+
+@section('breadcrumb')
+<span>/</span>
+<a href="{{ route('transactions.index') }}">Transactions</a>
+<span>/</span>
+<span>New</span>
+@endsection
+
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card z-index-0 fadeIn3 shadow-dark fadeInBottom">
-                <div
-                    class="card-header p-0 text-uppercase position-relative mt-n4 mx-3 z-index-2"
-                >
-                    <div
-                        class="bg-gradient-info shadow-primary border-radius-lg py-3 pe-1"
-                    >
-                        <h4
-                            class="text-white font-weight-bolder text-center mt-2 mb-0"
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+        <div class="card" style="border-radius:16px;border:1px solid #e2e8f0;">
+            <div class="card-body p-4">
+                <h5 style="font-weight:700;color:#0f172a;margin-bottom:4px;">
+                    @if($action === 'Yes') Update Goal Balance @else Record Transaction @endif
+                </h5>
+                <p style="font-size:.84rem;color:#94a3b8;margin-bottom:24px;">Add income or expense to your account.</p>
 
-                        >
-                        @if($action=="Yes")
-                        {{ __('Update Goal Balance') }}
-                        @else
-                        {{ __('New Transaction') }}
-                        @endif
-                        </h4>
+                <form action="{{ route('transactions.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Type</label>
+                        <select name="Action" class="form-select @error('Action') is-invalid @enderror" required>
+                            <option value="">— Select type —</option>
+                            @if($action === 'Yes')
+                                <option value="Paid" {{ old('Action') === 'Paid' ? 'selected' : '' }}>Paid</option>
+                            @else
+                                <option value="Paid"     {{ old('Action') === 'Paid'     ? 'selected' : '' }}>Paid</option>
+                                <option value="Received" {{ old('Action') === 'Received' ? 'selected' : '' }}>Received Income</option>
+                            @endif
+                        </select>
+                        @error('Action')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
-                </div>
 
-                <div class="card-body">
-                    <form method="POST"  action="{{ route('transactions.store') }}">
-                        @csrf
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Category</label>
+                        <select name="category" class="form-select @error('category') is-invalid @enderror" required>
+                            <option value="">— Select category —</option>
+                            @foreach($category as $cat)
+                            <option value="{{ $cat->id }}" {{ old('category') == $cat->id ? 'selected' : '' }}>
+                                {{ $cat->Nature }} — {{ $cat->category }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('category')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
 
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Description</label>
+                        <input type="text" name="description" class="form-control @error('description') is-invalid @enderror"
+                               value="{{ old('description') }}" placeholder="e.g. Salary, Groceries" required>
+                        @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
 
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Payment Method</label>
+                        <select name="Method" class="form-select @error('Method') is-invalid @enderror" required>
+                            <option value="Cash" {{ old('Method') === 'Cash' ? 'selected' : '' }}>Cash</option>
+                            @foreach($cards as $card)
+                            <option value="{{ $card->Type }}" {{ old('Method') === $card->Type ? 'selected' : '' }}>
+                                {{ $card->Type === 'Debit Cards' ? 'Debit Card' : $card->Type }} — {{ substr($card->CardNumber, -4) }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('Method')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
 
-                                                <div class="input-group input-group-outline my-3">
-                            <label for="Action" class="col-md-4  col-form-label text-md-right">{{ __('Cash Payment \ Income') }}</label>
-                            <div class="col-md-6">
-                                <select name="Action" class="form-control" required >
-                                <option  value="">-- Select Option --</option>
-                                 
-                                    @if($action=="Yes")
-                                    <option value="Paid">Cash payments</option>
-                        @else
-                        <option value="Paid">Cash payments</option>
-                               
-                               <option value="Received">Cash Income</option>
-                        @endif
-                                    
-                                </select>
-                                @error('Action')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                                @enderror
-                            </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Amount (ZAR)</label>
+                        <div class="input-group">
+                            <span class="input-group-text" style="font-size:.85rem;color:#64748b;">R</span>
+                            <input type="number" step="0.01" min="0" name="amount"
+                                   class="form-control @error('amount') is-invalid @enderror"
+                                   value="{{ old('amount') }}" placeholder="0.00" required>
+                            @error('amount')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
+                    </div>
 
-                        <div class="input-group input-group-outline my-3">
-                            <label for="category" class="col-md-4 col-form-label text-md-right">{{ __('Cash Flow For:') }}</label>
-                            <div class="col-md-6">
-                                <select name="category" class="form-control" required>
-                                    <option  value="">-- Select Option  --</option>
-                                    @foreach($category as $category)
-                                    
-                                        <option value="{{ $category->id }}">{{ $category->Nature }} -- {{ $category->category }}</option>
-                                    @endforeach
-                                </select>
-                                @error('category')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                                @enderror
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Date</label>
+                        <input type="date" name="bill_date"
+                               class="form-control @error('bill_date') is-invalid @enderror"
+                               value="{{ old('bill_date', date('Y-m-d')) }}" required>
+                        @error('bill_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
 
+                    <div class="mb-3">
+                        <label class="form-label" style="font-size:.82rem;font-weight:600;color:#374151;">Receipt <span style="color:#94a3b8;font-weight:400;">(optional)</span></label>
+                        <input type="file" name="Invoice_slip" class="form-control @error('Invoice_slip') is-invalid @enderror"
+                               accept=".pdf,.jpg,.jpeg,.png">
+                        @error('Invoice_slip')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <small style="display:block;margin-top:6px;color:#94a3b8;">PDF, JPG, or PNG · Max 5MB</small>
+                    </div>
 
-
-                            <div class="input-group input-group-outline my-3">
-
-                                <label for="description"
-                                    class="col-md-4 col-form-label text-md-right">{{ __('Description') }}</label>
-
-                                <div class="col-md-6">
-                                    <input id="description" type="text"
-                                        class="form-control @error('description') is-invalid @enderror" name="description"
-                                        value="{{ old('description') }}" required placeholder="Short Description" autocomplete="description">
-
-                                    @error('description')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="input-group input-group-outline my-3">
-
-                                <label for="Method" class="col-md-4 col-form-label text-md-right">{{ __('Method Affect') }}</label>
-
-                                <div class="col-md-6">
-                                
-
-                                    <select name="Method"  class="form-control" required>
-                            
-                                        
-                                       <option value="Cash" >Cash</option>
-                                       @foreach($cards as $method)
-                                          @if($method->Type=="Debit Cards")
-                                             <option value="{{$method->Type}}" >Debit Card No. {{$method->id}}</option>
-                                            @else
-                                             <option value="{{$method->Type}}" >{{$method->Type}} No. {{$method->id}}</option>
-                                            @endif
-                                        @endforeach
-                                
-                                    </select>
-    
-
-
-                                    @error('Method')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
-                                </div>
-                          </div>
-
-                          <div class="input-group input-group-outline my-3">
-
-                                <label for="amount" class="col-md-4 col-form-label text-md-right">{{ __('Amount  R') }}</label>
-
-                                <div class="col-md-6">
-                                    <input id="amount" type="number" step="0.01" placeholder="0.00"
-                                        class="form-control @error('amount') is-invalid @enderror" name="amount"
-                                        value="{{ old('amount') }}" required autocomplete="amount">
-
-                                    @error('amount')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="input-group input-group-outline my-3">
-
-                                <label for="bill_date"
-                                    class="col-md-4 col-form-label text-md-right">{{ __('Action Date') }}</label>
-
-                                <div class="col-md-6">
-                                    <input id="bill_date" type="date"
-                                        class="form-control @error('bill_date') is-invalid @enderror" name="bill_date"
-                                        value="{{ old('bill_date') }}" required autocomplete="bill_date">
-
-                                    @error('bill_date')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
-                                </div>
-                            </div>
-
-
-                            <div class="input-group input-group-outline my-3">
-
-                                <label for="status"
-                                    class="col-md-4 col-form-label text-md-right">{{ __('Invoice slip') }}</label>
-
-                                <div class="col-md-6">
-                                    <input id="Invoice_slip" type="file"
-                                        class="form-control @error('Invoice_slip') is-invalid @enderror" name="Invoice_slip"
-                                        value="{{ old('Invoice_slip') }}"  autocomplete="status">
-
-                                    @error('Invoice_slip')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                    @enderror
-                                </div>
-                            </div>
-                            <small  class="text-dark" >   <button type="submit" class="btn btn-danger  mb-0 text-dark">Add Transaction</button> &nbsp;&nbsp; </small>
-
-                      
-                        <small  class="text-dark" > <a title="Create New Category\ Action Item" class="btn bg-gradient-dark mb-0" href="{{route('categories.create')}}"><i class="material-icons text-sm">add</i>&nbsp;&nbsp;Create New Category</a> &nbsp;&nbsp; </small> <hr>
-
-                    </form>
-                </div>
+                    <div class="d-flex align-items-center gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary" style="border-radius:10px;font-weight:600;padding:9px 24px;">
+                            Record Transaction
+                        </button>
+                        <a href="{{ route('transactions.index') }}" class="btn btn-outline-secondary" style="border-radius:10px;font-weight:600;">Cancel</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-
 </div>
 @endsection

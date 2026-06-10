@@ -235,6 +235,72 @@
         .tb-icon:hover { background: #f1f5f9; color: #0f172a; }
         .tb-icon i { font-size: 1.2rem; }
 
+        /* ═══ NOTIFICATION BELL ═══ */
+        .tb-notif-wrap { position: relative; }
+        .notif-badge {
+            position: absolute; top: 2px; right: 2px;
+            min-width: 16px; height: 16px; border-radius: 8px;
+            background: #ef4444; color: #fff;
+            font-size: .6rem; font-weight: 700; line-height: 16px;
+            text-align: center; padding: 0 3px;
+            pointer-events: none;
+        }
+        .notif-panel {
+            position: absolute; top: calc(100% + 10px); right: 0;
+            width: 360px; max-width: 92vw;
+            background: #fff; border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.14);
+            border: 1px solid #e8eef4;
+            z-index: 500;
+            overflow: hidden;
+        }
+        .notif-panel-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .notif-panel-head span {
+            font-size: .88rem; font-weight: 700; color: #0f172a;
+        }
+        .notif-readall {
+            font-size: .75rem; font-weight: 600; color: #1d4ed8;
+            background: none; border: none; cursor: pointer; padding: 4px 8px;
+            border-radius: 6px; transition: background .15s;
+        }
+        .notif-readall:hover { background: #eff6ff; }
+        .notif-scroll { max-height: 340px; overflow-y: auto; }
+        .notif-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px 16px; text-decoration: none;
+            border-bottom: 1px solid #f8fafc;
+            transition: background .12s;
+        }
+        .notif-item:hover { background: #f8fafc; }
+        .notif-item.unread { background: #f0f7ff; }
+        .notif-item.unread:hover { background: #e0efff; }
+        .notif-icon {
+            width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            background: #eff6ff;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .notif-icon i { font-size: 1rem; color: #1d4ed8; }
+        .notif-item.unread .notif-icon { background: #dbeafe; }
+        .notif-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #1d4ed8; flex-shrink: 0; margin-top: 5px;
+        }
+        .notif-title { font-size: .82rem; font-weight: 600; color: #0f172a; line-height: 1.3; }
+        .notif-msg { font-size: .77rem; color: #64748b; line-height: 1.35; margin-top: 2px; }
+        .notif-time { font-size: .7rem; color: #94a3b8; margin-top: 3px; }
+        .notif-empty { padding: 28px 16px; text-align: center; font-size: .84rem; color: #94a3b8; }
+        .notif-footer {
+            display: block; text-align: center; padding: 10px;
+            font-size: .78rem; font-weight: 600; color: #1d4ed8;
+            border-top: 1px solid #f1f5f9; text-decoration: none;
+            transition: background .12s;
+        }
+        .notif-footer:hover { background: #f8fafc; }
+
         /* ═══ CONTENT ═══ */
         .page-content { flex: 1; padding: 20px 24px; }
 
@@ -429,7 +495,7 @@
             <i class="material-icons-round">tune</i> Master Records
         </a>
 
-        @if(in_array(auth()->user()->role ?? '', ['Master', 'Admin', 'AdmiX']))
+        @if(auth()->check() && auth()->user()->isAdmin())
         {{-- Admin --}}
         <div class="sb-label">Admin</div>
 
@@ -438,6 +504,15 @@
         </a>
         <a class="sb-item {{ request()->routeIs('admin.users') ? 'active' : '' }}" href="{{ route('admin.users') }}">
             <i class="material-icons-round">group</i> Manage Users
+        </a>
+        <a class="sb-item {{ request()->routeIs('admin.activity-log') ? 'active' : '' }}" href="{{ route('admin.activity-log') }}">
+            <i class="material-icons-round">history</i> Activity Log
+        </a>
+        <a class="sb-item {{ request()->routeIs('admin.health') ? 'active' : '' }}" href="{{ route('admin.health') }}">
+            <i class="material-icons-round">monitor_heart</i> Platform Health
+        </a>
+        <a class="sb-item {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}" href="{{ route('admin.announcements.index') }}">
+            <i class="material-icons-round">campaign</i> Announcements
         </a>
         @endif
 
@@ -479,6 +554,53 @@
                 <i class="material-icons-round">add</i>
                 <span class="tb-btn-text">New Transaction</span>
             </a>
+
+            {{-- Notification Bell --}}
+            @php $unreadCount = auth()->user()->unreadNotifications()->count(); @endphp
+            <div class="tb-notif-wrap">
+                <button class="tb-icon" id="notifBtn" title="Notifications" type="button"
+                        style="background:none;border:none;cursor:pointer;position:relative;">
+                    <i class="material-icons-round">notifications</i>
+                    @if($unreadCount > 0)
+                    <span class="notif-badge">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                    @endif
+                </button>
+
+                <div class="notif-panel" id="notifPanel" style="display:none;">
+                    <div class="notif-panel-head">
+                        <span>Notifications</span>
+                        @if($unreadCount > 0)
+                        <form method="POST" action="{{ route('notifications.readAll') }}">
+                            @csrf
+                            <button type="submit" class="notif-readall">Mark all read</button>
+                        </form>
+                        @endif
+                    </div>
+                    <div class="notif-scroll">
+                        @forelse(auth()->user()->notifications()->take(8)->get() as $n)
+                        @php $d = $n->data; @endphp
+                        <a href="{{ route('notifications.read', $n->id) }}"
+                           class="notif-item {{ is_null($n->read_at) ? 'unread' : '' }}">
+                            <div class="notif-icon">
+                                <i class="material-icons-round">{{ $d['icon'] ?? 'notifications' }}</i>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <div class="notif-title">{{ $d['title'] ?? 'Notification' }}</div>
+                                <div class="notif-msg">{{ $d['message'] ?? '' }}</div>
+                                <div class="notif-time">{{ \Carbon\Carbon::parse($n->created_at)->diffForHumans() }}</div>
+                            </div>
+                            @if(is_null($n->read_at))
+                            <div class="notif-dot"></div>
+                            @endif
+                        </a>
+                        @empty
+                        <div class="notif-empty">No notifications yet</div>
+                        @endforelse
+                    </div>
+                    <a href="{{ route('notifications.index') }}" class="notif-footer">View all notifications</a>
+                </div>
+            </div>
+
             <a href="{{ route('profile.index') }}" class="tb-icon" title="Profile">
                 <i class="material-icons-round">account_circle</i>
             </a>
@@ -610,6 +732,22 @@ sidebar.querySelectorAll('a.sb-item').forEach(function (a) {
 var win = navigator.platform.indexOf('Win') > -1;
 if (win && typeof Scrollbar !== 'undefined' && document.querySelector('.sb-nav')) {
     try { Scrollbar.init(document.querySelector('.sb-nav'), { damping: 0.5 }); } catch(e) {}
+}
+
+// Notification panel toggle
+var notifBtn   = document.getElementById('notifBtn');
+var notifPanel = document.getElementById('notifPanel');
+if (notifBtn && notifPanel) {
+    notifBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var open = notifPanel.style.display !== 'none';
+        notifPanel.style.display = open ? 'none' : 'block';
+    });
+    document.addEventListener('click', function (e) {
+        if (!notifBtn.contains(e.target) && !notifPanel.contains(e.target)) {
+            notifPanel.style.display = 'none';
+        }
+    });
 }
 </script>
 

@@ -51,7 +51,10 @@ class TransactionController extends Controller
 
     public function Dashboard()
     {
-        $transactions = Transaction::all()->where("Added_by","=",auth()->user()->id)->whereNotBetween( 'Status',['Deleted'] );
+        $transactions = Transaction::where('Added_by', auth()->id())
+            ->where('Status', '!=', 'Deleted')
+            ->latest()
+            ->get();
         return view('Transactions.Dashboard', compact('transactions'));
     }
 
@@ -60,7 +63,7 @@ class TransactionController extends Controller
         $category = Category::where("Added_by", "=", auth()->user()->id)
         ->where('category', 'NOT LIKE', '%Goal :%')
         ->get();
-                $cards=cards::all()->where("Added_by","=",auth()->user()->id);
+                $cards = cards::where('Added_by', auth()->id())->get();
         $action="No";
         return view('Transactions.create',compact('category','cards','action'));
     }
@@ -101,9 +104,11 @@ class TransactionController extends Controller
 
     public function edit($id)
     {
-        $transaction = Transaction::findOrFail($id);
-        $categories=category::all();
-        return view('Transactions.edit', compact('transaction','categories'));
+        $transaction = Transaction::where('id', $id)
+            ->where('Added_by', auth()->id())
+            ->firstOrFail();
+        $categories = category::where('Added_by', auth()->id())->get();
+        return view('Transactions.edit', compact('transaction', 'categories'));
     }
 
     public function update(Request $request, $id)

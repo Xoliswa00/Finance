@@ -9,12 +9,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Budget;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\DD;
-use PHPUnit\TextUI\Configuration\Builder;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination;
-use illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\Paginator;
 
 
 
@@ -23,7 +17,7 @@ class BudgetController extends Controller
     public function index()
     {
         
-        $CurrentB = Budget::all()->where('Added_by', "=", auth()->user()->id)->where("Status","=","Planning")->sortBy('due_date');
+        $CurrentB = Budget::where('Added_by', auth()->id())->where('Status', 'Planning')->orderBy('due_date')->get();
 
 
 
@@ -75,8 +69,8 @@ class BudgetController extends Controller
     public function create()
     {
 
-        $category=category::all()->where("Added_by", "=", auth()->user()->id);
-        return view('budgets.create',compact('category'));
+        $category = category::where('Added_by', auth()->id())->get();
+        return view('budgets.create', compact('category'));
     }
 
     public function store(Request $request)
@@ -241,7 +235,7 @@ class BudgetController extends Controller
         $currentMonth = Carbon::now();
         $MonthsAgo = $currentMonth->copy()->subMonths(1);
         $recurringOptions = [ 'Monthly', 'Yearly'];
-        $categories = category::all()->where("Added_by", "=", auth()->user()->id);
+        $categories = category::where('Added_by', auth()->id())->get();
     
         foreach ($recurringOptions as $option) {
             $budgets = Budget::where('Recurring', $option)

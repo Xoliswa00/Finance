@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\HealthController;
+use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\StatementController;
 use App\Http\Controllers\TransferController;
@@ -27,11 +31,11 @@ Route::get('/features', fn() => view('features'))->name('features');
 Route::get('/about', fn() => view('About'))->name('About');
 Route::get('/contact', fn() => view('Contact'))->name('Contact');
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 
-// ─── Authenticated ────────────────────────────────────────────────────────────
+// ─── Authenticated + Email Verified ──────────────────────────────────────────
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -115,6 +119,7 @@ Route::middleware('auth')->group(function () {
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // Goals
     Route::get('/goals/overview', [GoalsController::class, 'Goals'])->name('Goals.Matter');
@@ -152,8 +157,42 @@ Route::middleware('auth')->group(function () {
     Route::post('/holdings', [HoldingController::class, 'store'])->name('holding.store');
     Route::post('/holdings/update', [HoldingController::class, 'update'])->name('holding.update');
 
-    // Admin
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/admin/users', [AdminController::class, 'Users'])->name('admin.users');
-    Route::get('/admin/online', [AdminController::class, 'Onlineusers'])->name('admin.online');
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
+
+    // ─── Admin (role-protected) ───────────────────────────────────────────────
+    Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+
+        // Dashboard & core
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+        Route::get('/online', [AdminController::class, 'Onlineusers'])->name('online');
+        Route::get('/activity-log', [AdminController::class, 'activityLog'])->name('activity-log');
+
+        // User management
+        Route::get('/users', [AdminController::class, 'Users'])->name('users');
+        Route::post('/users/{user}/role', [UserManagementController::class, 'changeRole'])->name('users.role');
+        Route::post('/users/{user}/suspend', [UserManagementController::class, 'suspend'])->name('users.suspend');
+        Route::post('/users/{user}/reactivate', [UserManagementController::class, 'reactivate'])->name('users.reactivate');
+        Route::post('/users/{user}/force-logout', [UserManagementController::class, 'forceLogout'])->name('users.force-logout');
+        Route::post('/users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->name('users.reset-password');
+        Route::delete('/users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+        Route::get('/users/{user}/activity', [UserManagementController::class, 'userActivity'])->name('users.activity');
+        Route::post('/users/{user}/notes', [UserManagementController::class, 'addNote'])->name('users.notes.store');
+        Route::delete('/notes/{note}', [UserManagementController::class, 'deleteNote'])->name('notes.destroy');
+
+        // Impersonation (Master only)
+        Route::post('/users/{user}/impersonate', [UserManagementController::class, 'impersonate'])->name('users.impersonate');
+        Route::post('/stop-impersonating', [UserManagementController::class, 'stopImpersonating'])->name('stop-impersonating');
+
+        // Platform health
+        Route::get('/health', [HealthController::class, 'index'])->name('health');
+
+        // Announcements
+        Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::post('/announcements/{announcement}/deactivate', [AnnouncementController::class, 'deactivate'])->name('announcements.deactivate');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    });
 });
