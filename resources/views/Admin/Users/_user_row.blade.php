@@ -32,7 +32,7 @@
     </a>
   </td>
   <td class="align-middle text-center">
-    <span class="text-secondary text-xs">{{ $u->created_at->format('d M Y') }}</span>
+    <span class="text-secondary text-xs">{{ $u->created_at}}</span>
   </td>
   <td class="align-middle">
     <div class="dropdown">

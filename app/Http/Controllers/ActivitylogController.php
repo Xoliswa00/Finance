@@ -67,10 +67,12 @@ class ActivitylogController extends Controller
     $user = Auth::user();
     $addedBy = $user ? $user->id : session('guest_id', uniqid('guest_', true));
     session(['guest_id' => $addedBy]);
+    $ipAddress = $request->ip();
 
     Activitylog::create([
         'Added_by' => $addedBy,
         'page_visited' => $request->path(),
+        'ip_address' => $ipAddress,
     ]);
 }
 }
