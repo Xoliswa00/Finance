@@ -522,6 +522,9 @@
         <a class="sb-item {{ request()->routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.index') }}">
             <i class="material-icons-round">manage_accounts</i> Profile
         </a>
+        <a class="sb-item {{ request()->routeIs('About') ? 'active' : '' }}" href="{{ route('About') }}">
+            <i class="material-icons-round">info</i> About Bright Finance
+        </a>
 
         <a class="sb-item sb-logout" href="{{ route('logout') }}"
            onclick="event.preventDefault(); document.getElementById('sb-logout-form').submit();">
