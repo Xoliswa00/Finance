@@ -52,7 +52,7 @@
                     </div>
                     <div class="prof-row">
                         <span class="prof-label"><i class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">calendar_today</i> Member since</span>
-                        <span class="prof-value">{{ $user->created_at->format('d M Y') }}</span>
+                        <span class="prof-value">{{ $user->created_at?->format('d M Y') ?? '—' }}</span>
                     </div>
                     <div class="prof-row" style="border-bottom:none;">
                         <span class="prof-label"><i class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">verified_user</i> Status</span>

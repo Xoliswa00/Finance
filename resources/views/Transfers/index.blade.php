@@ -46,7 +46,7 @@
                 <tbody>
                     @foreach($transfers as $t)
                     <tr style="border-color:#f8fafc;">
-                        <td style="padding:12px 20px;color:#64748b;white-space:nowrap;border-color:#f8fafc;">{{ $t->transfer_date->format('d M Y') }}</td>
+                        <td style="padding:12px 20px;color:#64748b;white-space:nowrap;border-color:#f8fafc;">{{ $t->transfer_date?->format('d M Y') ?? '—' }}</td>
                         <td style="padding:12px 20px;font-weight:600;color:#0f172a;border-color:#f8fafc;">
                             {{ $t->fromCategory->category ?? '—' }}
                             <div style="font-size:.72rem;color:#94a3b8;">{{ $t->fromCategory->Nature ?? '' }}</div>

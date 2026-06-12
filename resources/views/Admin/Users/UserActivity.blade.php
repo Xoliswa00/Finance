@@ -31,7 +31,7 @@
             </div>
             <div class="col-6">
               <p class="text-xs text-secondary mb-0">Joined</p>
-              <p class="text-sm font-weight-bold mb-0">{{ $user->created_at->format('d M Y') }}</p>
+              <p class="text-sm font-weight-bold mb-0">{{ $user->created_at?->format('d M Y') ?? '—' }}</p>
             </div>
           </div>
 
@@ -95,7 +95,7 @@
             <div class="border-radius-md bg-gray-100 p-2 mb-2">
               <p class="text-xs mb-1">{{ $note->note }}</p>
               <div class="d-flex justify-content-between align-items-center">
-                <span class="text-xxs text-secondary">{{ $note->admin->name }} · {{ $note->created_at->format('d M Y') }}</span>
+                <span class="text-xxs text-secondary">{{ $note->admin->name }} · {{ $note->created_at?->format('d M Y') ?? '—' }}</span>
                 <form method="POST" action="{{ route('admin.notes.destroy', $note) }}">
                   @csrf @method('DELETE')
                   <button type="submit" class="btn btn-link btn-sm p-0 text-danger" onclick="return confirm('Delete note?')">
@@ -136,7 +136,7 @@
               <td><p class="text-xs font-weight-bold mb-0">/{{ $log->page_visited }}</p></td>
               <td><p class="text-xs text-secondary mb-0">{{ $log->ip_address ?? '—' }}</p></td>
               <td><p class="text-xs text-secondary mb-0">{{ Str::limit($log->user_agent ?? '—', 50) }}</p></td>
-              <td><p class="text-xs text-secondary mb-0">{{ $log->created_at->format('d M Y H:i') }}</p></td>
+              <td><p class="text-xs text-secondary mb-0">{{ $log->created_at?->format('d M Y H:i') ?? '—' }}</p></td>
             </tr>
             @empty
             <tr><td colspan="4" class="text-center py-4 text-secondary">No activity recorded.</td></tr>

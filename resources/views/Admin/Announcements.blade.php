@@ -90,7 +90,7 @@
                     @endif
                   </td>
                   <td>
-                    <p class="text-xs text-secondary mb-0">{{ $ann->created_at->format('d M Y') }}</p>
+                    <p class="text-xs text-secondary mb-0">{{ $ann->created_at?->format('d M Y') ?? '—' }}</p>
                     <p class="text-xxs text-secondary mb-0">by {{ $ann->creator->name }}</p>
                   </td>
                   <td>

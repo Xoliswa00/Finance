@@ -74,7 +74,7 @@
                                                                 {{ $urgencyLabel }}
                                                             </div>
                                                             <div style="font-size:12px;color:#94a3b8;margin-top:2px;">
-                                                                {{ $dueDate->format('d M Y') }}
+                                                                {{ $dueDate?->format('d M Y') ?? '—' }}
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -122,7 +122,7 @@
                                                                 {{ $msLabel }}
                                                             </div>
                                                             <div style="font-size:12px;color:#94a3b8;margin-top:2px;">
-                                                                {{ $msDue->format('d M Y') }}
+                                                                {{ $msDue?->format('d M Y') ?? '—' }}
                                                             </div>
                                                         </td>
                                                     </tr>

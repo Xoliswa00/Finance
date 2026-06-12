@@ -114,7 +114,7 @@
                   {{ Str::limit($log->user_agent ?? '—', 40) }}
                 </p>
               </td>
-              <td><p class="text-xs text-secondary mb-0">{{ $log->created_at->format('d M Y H:i') }}</p></td>
+              <td><p class="text-xs text-secondary mb-0">{{ $log->created_at?->format('d M Y H:i') ?? '—' }}</p></td>
             </tr>
             @empty
             <tr><td colspan="5" class="text-center py-4 text-secondary">No activity found.</td></tr>
