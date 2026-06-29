@@ -183,18 +183,9 @@ class BudgetController extends Controller
                 $action="Paid";
             }
 
-            $userRegMonth = Carbon::parse(auth()->user()->created_at)->month;
-
-            // Parse the bill_date from the request input
             $transactionDate = Carbon::parse($X_query->due_date);
-            $transactionMonth = $transactionDate->month;
-            
-    // Calculate the financial year based on the user's registration month
-    if ($transactionMonth >= $userRegMonth) {
-        $financialYear = $transactionDate->year;
-    } else {
-        $financialYear = $transactionDate->year - 1;
-    }
+            $fyData = \App\Models\FinancialYear::forDate($transactionDate);
+            $financialYear = $fyData['fy_year'];
 
             $transaction = new Transaction;
 

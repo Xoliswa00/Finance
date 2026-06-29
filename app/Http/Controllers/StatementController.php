@@ -184,7 +184,7 @@ class StatementController extends Controller
                     'bill_date'   => $date,
                     'Status'      => 'Paid',
                     'Added_by'    => $userId,
-                    'FY'          => Carbon::parse($date)->year,
+                    'FY'          => \App\Models\FinancialYear::forDate(Carbon::parse($date))['fy_year'],
                 ]);
 
                 // Update category balance

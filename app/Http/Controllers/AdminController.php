@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Activitylog;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 
@@ -129,6 +130,34 @@ class AdminController extends Controller
             ->get();
 
         return view('Admin.ActivityLog', compact('logs', 'users', 'topPages'));
+    }
+
+    public function siteMonitor()
+    {
+        $url    = config('services.xquisite.monitor_url');
+        $sites  = [];
+        $events = [];
+        $error  = null;
+
+        if ($url) {
+            try {
+                $response = Http::timeout(8)->get($url);
+
+                if ($response->successful()) {
+                    $data   = $response->json();
+                    $sites  = $data['sites']  ?? [];
+                    $events = $data['events'] ?? [];
+                } else {
+                    $error = "Monitor API returned HTTP {$response->status()}.";
+                }
+            } catch (\Exception $e) {
+                $error = "Could not reach monitor API: {$e->getMessage()}";
+            }
+        } else {
+            $error = 'XQUISITE_MONITOR_URL is not configured in your .env file.';
+        }
+
+        return view('Admin.SiteMonitor', compact('sites', 'events', 'error'));
     }
 
     public function Onlineusers()

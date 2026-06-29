@@ -49,13 +49,29 @@ class TransactionController extends Controller
         return view('Transactions.index', compact('budgets','transactions','cards','main','balance' ,'CreditB'));
     }
 
-    public function Dashboard()
+    public function Dashboard(\Illuminate\Http\Request $request)
     {
-        $transactions = Transaction::where('Added_by', auth()->id())
-            ->where('Status', '!=', 'Deleted')
-            ->latest()
+        $userId = auth()->id();
+        $userFys = \App\Models\FinancialYear::where('user_id', $userId)
+            ->orderByDesc('label')
             ->get();
-        return view('Transactions.Dashboard', compact('transactions'));
+
+        $activeFy = \App\Models\FinancialYear::activeFor($userId);
+        // label is "FY2027", strip prefix to get the year number
+        $activeFyYear = (int) substr($activeFy->label, 2);
+        $selectedFy = $request->query('fy') ? (int) $request->query('fy') : $activeFyYear;
+
+        // Resolve date bounds from FY year number (FY2027 = Jul 2026 – Jun 2027)
+        $fyStart = \Carbon\Carbon::create($selectedFy - 1, 7, 1)->toDateString();
+        $fyEnd   = \Carbon\Carbon::create($selectedFy, 6, 30)->toDateString();
+
+        $transactions = Transaction::where('Added_by', $userId)
+            ->where('Status', '!=', 'Deleted')
+            ->whereBetween('bill_date', [$fyStart, $fyEnd])
+            ->latest('bill_date')
+            ->paginate(50);
+
+        return view('Transactions.Dashboard', compact('transactions', 'userFys', 'selectedFy', 'activeFy'));
     }
 
     public function create()
@@ -71,18 +87,9 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
 
-         $userRegMonth = Carbon::parse(auth()->user()->created_at)->month;
-
-    // Parse the bill_date from the request input
     $transactionDate = Carbon::parse($request->input('bill_date'));
-    $transactionMonth = $transactionDate->month;
-
-    // Calculate the financial year based on the user's registration month
-    if ($transactionMonth >= $userRegMonth) {
-        $financialYear = $transactionDate->year;
-    } else {
-        $financialYear = $transactionDate->year - 1;
-    }
+    $fyData = \App\Models\FinancialYear::forDate($transactionDate);
+    $financialYear = $fyData['fy_year'];
         $transaction = new Transaction;
 
         $transaction->Action = $request->input('Action');

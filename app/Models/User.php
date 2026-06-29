@@ -76,6 +76,11 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(\App\Models\Activitylog::class, 'Added_by')->latest();
     }
+
+    public function financialYears()
+    {
+        return $this->hasMany(\App\Models\FinancialYear::class);
+    }
     /**
      * The attributes that should be hidden for serialization.
      *

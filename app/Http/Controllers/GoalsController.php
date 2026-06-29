@@ -9,12 +9,6 @@ use App\Models\Milestone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination;
-use illuminate\Database\Eloquent\Collection;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\View; 
-use Illuminate\Database\Eloquent\Model;
 
 
 
@@ -166,7 +160,7 @@ class GoalsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Goals $goals)
+    public function edit(Goals $goal)
     {
         return view('Goals.edit', compact('goal'));
     }
@@ -192,7 +186,7 @@ class GoalsController extends Controller
         }
 
    
-       /** */ $this->updateMilestones($goal->current_amount);
+        $this->updateMilestones($goal);
     
         return redirect()->route('Goals.show', $goal)
             ->with('success', 'Goal updated successfully.');
@@ -242,6 +236,25 @@ class GoalsController extends Controller
 
         }
         
+
+        public function updateMilestones(Goals $goal)
+        {
+            $milestones = Milestone::where('goal_id', $goal->id)->get();
+
+            if ($goal->current_amount >= $goal->target_amount) {
+                foreach ($milestones as $milestone) {
+                    $milestone->milestone_status = 'Achieved';
+                    $milestone->save();
+                }
+            } else {
+                foreach ($milestones as $milestone) {
+                    $milestone->milestone_status = $goal->current_amount >= $milestone->milestone_amount
+                        ? 'Achieved'
+                        : 'Pending';
+                    $milestone->save();
+                }
+            }
+        }
 
         public function updateBalance()
         {

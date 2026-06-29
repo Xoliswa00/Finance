@@ -186,6 +186,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/users/{user}/impersonate', [UserManagementController::class, 'impersonate'])->name('users.impersonate');
         Route::post('/stop-impersonating', [UserManagementController::class, 'stopImpersonating'])->name('stop-impersonating');
 
+        // Site monitor (cross-instance via Xquisite API)
+        Route::get('/sites', [AdminController::class, 'siteMonitor'])->name('sites');
+
         // Platform health
         Route::get('/health', [HealthController::class, 'index'])->name('health');
 
