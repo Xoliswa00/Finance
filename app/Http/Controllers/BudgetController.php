@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\category;
+use App\Models\Category;
 use App\Models\Journal_entry;
 use App\Models\Transaction;
 use Carbon\Carbon;

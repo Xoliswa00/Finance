@@ -7,7 +7,7 @@ use App\Models\Budget;
 use App\Models\Milestone;
 use App\Models\Master_X;
 use App\Models\cards;
-use App\Models\category;
+use App\Models\Category;
 use App\Models\Goals;
 use App\Models\Journal_entry;
 use App\Models\X_item;

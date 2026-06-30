@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\cards;
-use App\Models\category;
+use App\Models\Category;
 use Carbon\Carbon;
 use App\Models\Goals;
 use App\Models\Milestone;

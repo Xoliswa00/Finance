@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\cards;
-use App\Models\category;
+use App\Models\Category;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Http\Request;

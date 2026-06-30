@@ -6,7 +6,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Mail\BudgetReminderMail;
 use App\Models\Budget;
 use App\Models\cards;
-use App\Models\category;
+use App\Models\Category;
 use App\Models\Goals;
 use App\Models\Milestone;
 use App\Models\Transaction;

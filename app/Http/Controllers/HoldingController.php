@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\cards;
 use App\Models\Holding;
-use App\models\category;
+use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
