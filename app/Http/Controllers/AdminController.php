@@ -141,7 +141,12 @@ class AdminController extends Controller
 
         if ($url) {
             try {
-                $response = Http::timeout(8)->get($url);
+                $token    = config('services.xquisite.monitor_token');
+                $request  = Http::timeout(8);
+                if ($token) {
+                    $request = $request->withToken($token);
+                }
+                $response = $request->get($url);
 
                 if ($response->successful()) {
                     $data   = $response->json();

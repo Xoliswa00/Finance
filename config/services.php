@@ -32,7 +32,8 @@ return [
     ],
 
     'xquisite' => [
-        'monitor_url' => env('XQUISITE_MONITOR_URL'),
+        'monitor_url'   => env('XQUISITE_MONITOR_URL'),
+        'monitor_token' => env('XQUISITE_MONITOR_TOKEN'),
     ],
 
 ];
