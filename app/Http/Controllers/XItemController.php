@@ -80,7 +80,7 @@ class XItemController extends Controller
       
 
 
-        $category = new category();
+        $category = new Category();
         $category->category ="Master : ". $request->input('Section');
         
         $category->Nature = $request->input('Nature');

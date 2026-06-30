@@ -86,7 +86,7 @@ class GoalsController extends Controller
 
 
         /***Creates a new cataegory based on the title of the goal, to allow the balance to updated nicely */
-        $category = new category();
+        $category = new Category();
         $category->category ="Goal : ". $request->input('title');
         If($request->goal_category=="Saving" || $request->goal_category=="Investing" ){
             $category->Nature = "Current Assets";
