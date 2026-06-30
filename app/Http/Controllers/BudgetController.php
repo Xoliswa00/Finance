@@ -33,6 +33,16 @@ class BudgetController extends Controller
 
         
 
+        // Budget planning is forward-looking: show from start of current month
+        // across the full active FY (or next FY if we're in the last month)
+        $planningFrom = \Carbon\Carbon::now()->startOfMonth()->toDateString();
+        $planningTo   = $fyEnd;
+        // If current month is the last month of the FY, also include next FY
+        if (\Carbon\Carbon::parse($fyEnd)->diffInMonths(now()) <= 1) {
+            $nextFy      = \App\Models\FinancialYear::forDate(\Carbon\Carbon::parse($fyEnd)->addDay());
+            $planningTo  = $nextFy['end_date'];
+        }
+
         $budgetData = DB::table('budgets')
         ->selectRaw('DATE_FORMAT(due_date, "%Y-%m") AS month,
                      SUM(CASE WHEN Nature = "Income" THEN Amount ELSE 0 END) AS income_budgeted,
@@ -44,7 +54,7 @@ class BudgetController extends Controller
         ->join('categories', 'budgets.category', '=', 'categories.id')
         ->where('budgets.Status', 'Planning')
         ->where('budgets.Added_by', auth()->user()->id)
-        ->whereBetween('budgets.due_date', [$fyStart, $fyEnd])
+        ->whereBetween('budgets.due_date', [$planningFrom, $planningTo])
         ->groupBy('month')
         ->get();
 
@@ -57,7 +67,7 @@ class BudgetController extends Controller
         ->join('categories', 'budgets.category', '=', 'categories.id')
         ->where('budgets.Added_by', auth()->user()->id)
         ->whereNot('budgets.Status', 'Deleted')
-        ->whereBetween('budgets.due_date', [$fyStart, $fyEnd])
+        ->whereBetween('budgets.due_date', [$planningFrom, $planningTo])
         ->groupBy('month')
         ->get();
        
