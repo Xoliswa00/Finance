@@ -26,7 +26,7 @@
       --bf-amber:    #f59e0b;
       --bf-red:      #ef4444;
       --bf-blue:     #3b82f6;
-      --bf-radius:   10px;
+      --bf-radius:   16px;
       --bf-glow:     0 0 0 1px rgba(34,197,94,.15), 0 4px 20px rgba(0,0,0,.4);
     }
 
@@ -135,6 +135,12 @@
       border-radius: var(--bf-radius) !important;
       box-shadow: 0 2px 12px rgba(0,0,0,.35) !important;
       color: var(--bf-text) !important;
+    }
+    /* Glass cards override: allow backdrop-filter to show through */
+    .card.glass {
+      background: rgba(15,23,42,0.7) !important;
+      border: 1px solid rgba(255,255,255,0.06) !important;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
     }
 
     .card-header {
