@@ -15,81 +15,94 @@ class ReportsController extends Controller
      */
     public function index()
     {
-            // Calculate the start and end dates for the last three months
-    $currentMonth = Carbon::now();
-   $lastMonth = $currentMonth->copy()->subMonth();
-$twoMonthsAgo = $currentMonth->copy()->subMonths(2);
-$thereMonthsAgo = $currentMonth->copy()->subMonths(3);
-        $currentMonth;
-    // Retrieve income transactions for the last three months grouped by description
-    $incomeReport = DB::table('transactions')
-        ->select('description',
-            DB::raw("SUM(CASE WHEN (Action = 'Received' or Action = 'Earned' ) AND bill_date between '$thereMonthsAgo' and  '$twoMonthsAgo' THEN amount ELSE 0 END) AS month_2_total"),
-            DB::raw("SUM(CASE WHEN (Action = 'Received' or Action = 'Earned' )  AND bill_date between '$twoMonthsAgo' and '$lastMonth' THEN amount ELSE 0 END) AS month_1_total"),
-            DB::raw("SUM(CASE WHEN (Action = 'Received' or Action = 'Earned' )  AND bill_date between '$lastMonth' and  '$currentMonth' THEN amount ELSE 0 END) AS current_month_total"))
-            ->where("Added_by", "=", auth()->user()->id)
+        // Use the current financial year (July-June) as the reporting period
+        $fy      = \App\Models\FinancialYear::forDate(Carbon::now());
+        $fyStart = $fy['start_date'];   // e.g. 2026-07-01
+        $fyEnd   = $fy['end_date'];     // e.g. 2027-06-30
+        $fyLabel = $fy['label'];        // e.g. FY2027
+
+        // Three most recent complete months within the FY to use as column headers
+        $now    = Carbon::now();
+        $m1Date = $now->copy()->startOfMonth();
+        $m2Date = $now->copy()->subMonth()->startOfMonth();
+        $m3Date = $now->copy()->subMonths(2)->startOfMonth();
+
+        // Clamp to FY start so we never show data from a prior FY
+        $fyStartDate = Carbon::parse($fyStart);
+        if ($m3Date->lt($fyStartDate)) $m3Date = $fyStartDate->copy();
+        if ($m2Date->lt($fyStartDate)) $m2Date = $fyStartDate->copy();
+
+        $m3Start = $m3Date->toDateString();
+        $m3End   = $m3Date->copy()->endOfMonth()->toDateString();
+        $m2Start = $m2Date->toDateString();
+        $m2End   = $m2Date->copy()->endOfMonth()->toDateString();
+        $m1Start = $m1Date->toDateString();
+        $m1End   = $m1Date->copy()->endOfMonth()->toDateString();
+
+        $incomeReport = DB::table('transactions')
+            ->select('description',
+                DB::raw("SUM(CASE WHEN Action IN ('Received','Earned') AND bill_date BETWEEN '$m3Start' AND '$m3End' THEN amount ELSE 0 END) AS month_2_total"),
+                DB::raw("SUM(CASE WHEN Action IN ('Received','Earned') AND bill_date BETWEEN '$m2Start' AND '$m2End' THEN amount ELSE 0 END) AS month_1_total"),
+                DB::raw("SUM(CASE WHEN Action IN ('Received','Earned') AND bill_date BETWEEN '$m1Start' AND '$m1End' THEN amount ELSE 0 END) AS current_month_total"))
+            ->where('Added_by', auth()->id())
+            ->whereBetween('bill_date', [$fyStart, $fyEnd])
             ->groupBy('description')
-        ->get();
+            ->get();
 
-       
-
-    // Retrieve expense transactions for the last three months grouped by description
-    $expenseReport = DB::table('transactions')
-        ->select('description',
-            DB::raw("SUM(CASE WHEN (Action = 'Paid' or Action = 'Bought') AND bill_date BETWEEN  '$thereMonthsAgo' and  '$twoMonthsAgo' THEN amount ELSE 0 END) AS month_2_total"),
-            DB::raw("SUM(CASE WHEN (Action = 'Paid' or Action = 'Bought')  AND bill_date BETWEEN '$twoMonthsAgo' and '$lastMonth' THEN amount ELSE 0 END) AS month_1_total"),
-            DB::raw("SUM(CASE WHEN (Action = 'Paid' or Action = 'Bought')  AND bill_date BETWEEN '$lastMonth' and  '$currentMonth' THEN amount ELSE 0 END) AS current_month_total"))
-            ->where("Added_by", "=", auth()->user()->id)
+        $expenseReport = DB::table('transactions')
+            ->select('description',
+                DB::raw("SUM(CASE WHEN Action IN ('Paid','Bought') AND bill_date BETWEEN '$m3Start' AND '$m3End' THEN amount ELSE 0 END) AS month_2_total"),
+                DB::raw("SUM(CASE WHEN Action IN ('Paid','Bought') AND bill_date BETWEEN '$m2Start' AND '$m2End' THEN amount ELSE 0 END) AS month_1_total"),
+                DB::raw("SUM(CASE WHEN Action IN ('Paid','Bought') AND bill_date BETWEEN '$m1Start' AND '$m1End' THEN amount ELSE 0 END) AS current_month_total"))
+            ->where('Added_by', auth()->id())
+            ->whereBetween('bill_date', [$fyStart, $fyEnd])
             ->groupBy('description')
-      
-        ->get();
+            ->get();
 
-    // Combine the income and expense reports into a single array
-    $report = [];
-    foreach ($incomeReport as $income) {
-        $report[$income->description] = [
-            'Income_description'=>$income->description,
-            'income_month_2_total' => $income->month_2_total,
-            'income_month_1_total' => $income->month_1_total,
-            'income_current_month_total' => $income->current_month_total,
-            'income_current_Balance'=>$income->month_2_total+$income->month_1_total+$income->current_month_total,
-            'Expense_description'=>" ",
-            'expense_month_2_total' => 0,
-            'expense_month_1_total' => 0,
-            'expense_current_month_total' => 0,
-            'expense_current_Balance' => 0,
-        ];
-    }
-
-    foreach ($expenseReport as $expense) {
-        if (isset($report[$expense->description])) {
-            $report[$expense->description]['Expense_description'] = $expense->description;
-            $report[$expense->description]['expense_month_2_total'] = $expense->month_2_total;
-            $report[$expense->description]['expense_month_1_total'] = $expense->month_1_total;
-            $report[$expense->description]['expense_current_month_total'] = $expense->current_month_total;
-            $report[$expense->description]['expense_current_Balance'] = $expense->current_month_total+$expense->month_1_total+$expense->month_2_total;
-
-        } else {
-            $report[$expense->description] = [
-                'Income_description'=>"",
-                'income_month_2_total' => 0,
-                'income_month_1_total' => 0,
-                'income_current_month_total' => 0,
-                'income_current_Balance'=>0,
-                'Expense_description'=>$expense->description,
-                'expense_month_2_total' => $expense->month_2_total,
-                'expense_month_1_total' => $expense->month_1_total,
-                'expense_current_month_total' => $expense->current_month_total,
-                'expense_current_Balance' => $expense->current_month_total+$expense->month_1_total+$expense->month_2_total,
+        $report = [];
+        foreach ($incomeReport as $income) {
+            $report[$income->description] = [
+                'Income_description'         => $income->description,
+                'income_month_2_total'       => $income->month_2_total,
+                'income_month_1_total'       => $income->month_1_total,
+                'income_current_month_total' => $income->current_month_total,
+                'income_current_Balance'     => $income->month_2_total + $income->month_1_total + $income->current_month_total,
+                'Expense_description'        => ' ',
+                'expense_month_2_total'      => 0,
+                'expense_month_1_total'      => 0,
+                'expense_current_month_total'=> 0,
+                'expense_current_Balance'    => 0,
             ];
         }
-    }
-   $month3=date_format($twoMonthsAgo,"M-Y");
-   $month2=date_format($lastMonth,"M-Y");
-   $month1=date_format($currentMonth,"M-Y");
 
+        foreach ($expenseReport as $expense) {
+            if (isset($report[$expense->description])) {
+                $report[$expense->description]['Expense_description']         = $expense->description;
+                $report[$expense->description]['expense_month_2_total']       = $expense->month_2_total;
+                $report[$expense->description]['expense_month_1_total']       = $expense->month_1_total;
+                $report[$expense->description]['expense_current_month_total'] = $expense->current_month_total;
+                $report[$expense->description]['expense_current_Balance']     = $expense->month_2_total + $expense->month_1_total + $expense->current_month_total;
+            } else {
+                $report[$expense->description] = [
+                    'Income_description'         => '',
+                    'income_month_2_total'       => 0,
+                    'income_month_1_total'       => 0,
+                    'income_current_month_total' => 0,
+                    'income_current_Balance'     => 0,
+                    'Expense_description'        => $expense->description,
+                    'expense_month_2_total'      => $expense->month_2_total,
+                    'expense_month_1_total'      => $expense->month_1_total,
+                    'expense_current_month_total'=> $expense->current_month_total,
+                    'expense_current_Balance'    => $expense->month_2_total + $expense->month_1_total + $expense->current_month_total,
+                ];
+            }
+        }
 
-        return view('Financials.reports',compact('report','month3','month2','month1') );
+        $month3 = $m3Date->format('M-Y');
+        $month2 = $m2Date->format('M-Y');
+        $month1 = $m1Date->format('M-Y');
+
+        return view('Financials.reports', compact('report', 'month3', 'month2', 'month1', 'fyLabel'));
     }
 
 
@@ -297,7 +310,11 @@ for ($i = 0; $i < 3; $i++) {
      */
     public function monthlyTrends()
     {
-        $userId = auth()->user()->id;
+        $userId  = auth()->user()->id;
+        $fy      = \App\Models\FinancialYear::forDate(Carbon::now());
+        $fyStart = $fy['start_date'];
+        $fyEnd   = $fy['end_date'];
+        $fyLabel = $fy['label'];
 
         $rows = DB::table('transactions')
             ->select(
@@ -306,7 +323,7 @@ for ($i = 0; $i < 3; $i++) {
                 DB::raw("SUM(CASE WHEN Action IN ('Paid','Bought') THEN amount ELSE 0 END) as expenses")
             )
             ->where('Added_by', $userId)
-            ->where('bill_date', '>=', Carbon::now()->subMonths(11)->startOfMonth())
+            ->whereBetween('bill_date', [$fyStart, $fyEnd])
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -335,7 +352,7 @@ for ($i = 0; $i < 3; $i++) {
                 DB::raw('SUM(transactions.Amount) as total')
             )
             ->where('transactions.Added_by', $userId)
-            ->where('transactions.bill_date', '>=', Carbon::now()->subMonths(2)->startOfMonth())
+            ->whereBetween('transactions.bill_date', [$fyStart, $fyEnd])
             ->whereIn('transactions.Action', ['Paid', 'Bought'])
             ->groupBy('categories.id', 'categories.category', 'categories.Nature')
             ->orderByDesc('total')
@@ -355,7 +372,7 @@ for ($i = 0; $i < 3; $i++) {
             'net'      => $netByMonth->sum('net'),
         ];
 
-        return view('Financials.monthly-trends', compact('netByMonth', 'totals', 'categoryBreakdown'));
+        return view('Financials.monthly-trends', compact('netByMonth', 'totals', 'categoryBreakdown', 'fyLabel'));
     }
 
     /**

@@ -16,7 +16,11 @@ class BudgetController extends Controller
 {
     public function index()
     {
-        
+        $fy      = \App\Models\FinancialYear::forDate(\Carbon\Carbon::now());
+        $fyStart = $fy['start_date'];
+        $fyEnd   = $fy['end_date'];
+        $fyLabel = $fy['label'];
+
         $CurrentB = Budget::where('Added_by', auth()->id())->where('Status', 'Planning')->orderBy('due_date')->get();
 
 
@@ -30,7 +34,7 @@ class BudgetController extends Controller
         
 
         $budgetData = DB::table('budgets')
-        ->selectRaw('DATE_FORMAT(due_date, "%Y-%m") AS month, 
+        ->selectRaw('DATE_FORMAT(due_date, "%Y-%m") AS month,
                      SUM(CASE WHEN Nature = "Income" THEN Amount ELSE 0 END) AS income_budgeted,
                      SUM(CASE WHEN Nature != "Income"  THEN Amount ELSE 0 END) AS expense_budgeted,
                      SUM(CASE WHEN Nature = "Income" THEN Amount ELSE -Amount END) AS net_budgeted,
@@ -40,19 +44,20 @@ class BudgetController extends Controller
         ->join('categories', 'budgets.category', '=', 'categories.id')
         ->where('budgets.Status', 'Planning')
         ->where('budgets.Added_by', auth()->user()->id)
+        ->whereBetween('budgets.due_date', [$fyStart, $fyEnd])
         ->groupBy('month')
         ->get();
 
 
         $chart = DB::table('budgets')
-        ->selectRaw('DATE_FORMAT(due_date, "%Y-%m") AS month, 
+        ->selectRaw('DATE_FORMAT(due_date, "%Y-%m") AS month,
                      SUM(CASE WHEN Nature = "Income" THEN Amount ELSE 0 END) AS income_budgeted,
                      SUM(CASE WHEN Nature != "Income"  and Nature != "Expenses"  THEN Amount ELSE 0 END) AS other_spending,
                      SUM(CASE WHEN Nature = "Expenses"  THEN Amount ELSE 0 END) AS expense_budgeted')
         ->join('categories', 'budgets.category', '=', 'categories.id')
-        
         ->where('budgets.Added_by', auth()->user()->id)
         ->whereNot('budgets.Status', 'Deleted')
+        ->whereBetween('budgets.due_date', [$fyStart, $fyEnd])
         ->groupBy('month')
         ->get();
        
@@ -63,7 +68,7 @@ class BudgetController extends Controller
 
 
 
-        return view('budgets.index', compact('budgets','budgetData','CurrentB','chart'));
+        return view('budgets.index', compact('budgets', 'budgetData', 'CurrentB', 'chart', 'fyLabel'));
     }
 
     public function create()

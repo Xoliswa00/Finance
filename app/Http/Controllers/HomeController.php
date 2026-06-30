@@ -65,13 +65,21 @@ class HomeController extends Controller
             ->where('budgets.Added_by', $userId)
             ->get();
 
+        $fy      = \App\Models\FinancialYear::forDate(now());
+        $fyStart = $fy['start_date'];
+        $fyEnd   = $fy['end_date'];
+        $fyLabel = $fy['label'];
+
         $data = Transaction::select(
                 DB::raw('SUM(CASE WHEN Action IN ("Paid", "Bought") THEN Amount ELSE 0 END) as Outgoing'),
                 DB::raw('SUM(CASE WHEN Action IN ("Received", "Earned") THEN Amount ELSE 0 END) as Incoming'),
-                DB::raw('DATE_FORMAT(updated_at, "%Y-%m") as Month')
+                DB::raw('DATE_FORMAT(bill_date, "%Y-%m") as Month')
             )
             ->where('Added_by', $userId)
+            ->where('Status', '!=', 'Deleted')
+            ->whereBetween('bill_date', [$fyStart, $fyEnd])
             ->groupBy('Month')
+            ->orderBy('Month')
             ->get();
 
         $labels   = $data->pluck('Month');
@@ -111,7 +119,8 @@ class HomeController extends Controller
         return view('home', compact(
             'balance', 'CreditB', 'goals', 'main', 'cards',
             'budget', 'actual', 'labels', 'outgoing', 'incoming',
-            'budgetDates', 'milestonedates', 'CurrentB', 'checklist'
+            'budgetDates', 'milestonedates', 'CurrentB', 'checklist',
+            'fyLabel'
         ));
     }
 
